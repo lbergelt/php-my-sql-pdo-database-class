@@ -312,4 +312,5 @@ class DB
         return $exception;
     }
 }
+
 ?>

@@ -197,7 +197,8 @@ class YourClass  Extends Crud {
 ```php
 <?php
 // First we"ll have create the instance of the class
-$person = new person();
+$db = new Db($host, $user, $pass, $dbname);
+$person = new person($db);
  
 // Create new person
 $person->Firstname  = "Kona";
@@ -206,7 +207,7 @@ $person->Sex        = "F";
 $created            = $person->Create();
  
 //  Or give the bindings to the constructor
-$person  = new person(array("Firstname"=>"Kona","age"=>"20","sex"=>"F"));
+$person  = new person($db, array("Firstname"=>"Kona","age"=>"20","sex"=>"F"));
 $created = $person->Create();
  
 // SQL Equivalent

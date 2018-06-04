@@ -12,8 +12,8 @@ class Crud {
 
 	public $variables;
 
-	public function __construct($data = array()) {
-		$this->db =  new DB();
+	public function __construct(&$db, $data = array()) {
+		$this->db =  $db;
 		$this->variables  = $data;
 	}
 
@@ -184,4 +184,5 @@ class Crud {
 	}
 
 }
+
 ?>
