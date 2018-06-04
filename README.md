@@ -30,7 +30,7 @@ $db = new Db($host, $user, $pass, $dbname);
 #### 4.  Logs - Modify the read/write rights of the root folder
 
 Everytime an exception is thrown by the database class a log file gets created or modified.
-These logs are stored in the logs directory. Which means the database class needs write access for the logs folder.
+These logs are stored in the logs directory, you can change the directory path with ``define('PATH_LOG_DIR', 'somedir/')``. Which means the database class needs write access for the logs folder.
 If the files are on a webserver you'll have to modify the rights of the root folder otherwise you'll get a "Permission denied" error.
 
 The log file is a simple plain text file with the current date('year-month-day') as filename.
