@@ -25,7 +25,7 @@ require("Db.class.php");
 ```php
 <?php
 // The instance
-$db = new Db();
+$db = new Db($host, $user, $pass, $dbname);
 ```
 #### 4.  Logs - Modify the read/write rights of the root folder
 

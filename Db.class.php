@@ -35,9 +35,18 @@ class DB
      *	2. Connect to database.
      *	3. Creates the parameter array.
      */
-    public function __construct()
+    public function __construct($host, $user, $pass, $dbname)
     {
         $this->log = new Log();
+
+        $this->settings = array
+        (
+            'host'      =>  $host,
+            'user'      =>  $user,
+            'password'  =>  $pass,
+            'dbname'    =>  $dbname,
+        );
+
         $this->Connect();
         $this->parameters = array();
     }
@@ -52,7 +61,7 @@ class DB
      */
     private function Connect()
     {
-        $this->settings = parse_ini_file("settings.ini.php");
+        //$this->settings = parse_ini_file("settings.ini.php");
         $dsn            = 'mysql:dbname=' . $this->settings["dbname"] . ';host=' . $this->settings["host"] . '';
         try {
             # Read settings from INI file, set UTF8

@@ -1,9 +1,9 @@
 {
-    "name": "indieteq/indieteq-php-my-sql-pdo-database-class",
+    "name": "jgauthi/indieteq-php-my-sql-pdo-database-class",
     "description": "A database class for MySQL with PDO",
     "type": "library",
     "keywords": [ "mysql", "pdo", "php", "beer", "free" ],
-    "homepage": "https://github.com/wickyaswal/indieteq-php-my-sql-pdo-database-class",
+    "homepage": "https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class",
     "license": "Beerware",
     "authors": [
         { "name": "wicky", "email": "info@wickyaswal.com" }
