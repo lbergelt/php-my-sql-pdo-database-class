@@ -1,6 +1,6 @@
 <?php
 /**
- *  DB - A simple database class 
+ *  DB - A simple database class
  *
  * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @git 		https://github.com/wickyaswal/PHP-MySQL-PDO-Database-Class
@@ -12,32 +12,33 @@ class DB
 {
     # @object, The PDO object
     private $pdo;
-    
+
     # @object, PDO statement object
     private $sQuery;
-    
+
     # @array,  The database settings
     private $settings;
-    
+
     # @bool ,  Connected to the database
     private $bConnected = false;
-    
-    # @object, Object for logging exceptions	
+
+    # @object, Object for logging exceptions
     private $log;
-    
+
     # @array, The parameters of the SQL query
     private $parameters;
-    
+
     /**
-     *   Default Constructor 
+     *   Default Constructor
      *
      *	1. Instantiate Log class.
      *	2. Connect to database.
      *	3. Creates the parameter array.
      */
-    public function __construct($host, $user, $pass, $dbname)
+    public function __construct($host, $user, $pass, $dbname, $debug = false)
     {
-        $this->log = new Log();
+        if($debug)
+            $this->log = new Log();
 
         $this->settings = array
         (
@@ -50,11 +51,11 @@ class DB
         $this->Connect();
         $this->parameters = array();
     }
-    
+
     /**
      *	This method makes connection to the database.
-     *	
-     *	1. Reads the database settings from a ini file. 
+     *
+     *	1. Reads the database settings from a ini file.
      *	2. Puts  the ini content into the settings array.
      *	3. Tries to connect to the database.
      *	4. If connection failed, exception is displayed and a log file gets created.
@@ -68,19 +69,20 @@ class DB
             $this->pdo = new PDO($dsn, $this->settings["user"], $this->settings["password"], array(
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
             ));
-            
-            # We can now log any exceptions on Fatal error. 
+
+            # We can now log any exceptions on Fatal error.
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
+
             # Disable emulation of prepared statements, use REAL prepared statements instead.
             $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-            
+
             # Connection succeeded, set the boolean to true.
             $this->bConnected = true;
         }
         catch (PDOException $e) {
             # Write into log
-            echo $this->ExceptionLog($e->getMessage());
+            if(!is_null($this->log))
+                echo $this->ExceptionLog($e->getMessage());
             die();
         }
     }
@@ -94,14 +96,14 @@ class DB
         # http://www.php.net/manual/en/pdo.connections.php
         $this->pdo = null;
     }
-    
+
     /**
      *	Every method which needs to execute a SQL query uses this method.
-     *	
+     *
      *	1. If not connected, connect to the database.
      *	2. Prepare Query.
      *	3. Parameterize Query.
-     *	4. Execute Query.	
+     *	4. Execute Query.
      *	5. On exception : Write Exception into the log + SQL query.
      *	6. Reset the Parameters.
      */
@@ -114,10 +116,10 @@ class DB
         try {
             # Prepare query
             $this->sQuery = $this->pdo->prepare($query);
-            
-            # Add parameters to the parameter array	
+
+            # Add parameters to the parameter array
             $this->bindMore($parameters);
-            
+
             # Bind parameters
             if (!empty($this->parameters)) {
                 foreach ($this->parameters as $param => $value) {
@@ -134,26 +136,27 @@ class DB
                     $this->sQuery->bindValue($value[0], $value[1], $type);
                 }
             }
-            
-            # Execute SQL 
+
+            # Execute SQL
             $this->sQuery->execute();
         }
         catch (PDOException $e) {
             # Write into log and display Exception
-            echo $this->ExceptionLog($e->getMessage(), $query);
+            if(!is_null($this->log))
+                echo $this->ExceptionLog($e->getMessage(), $query);
             die();
         }
-        
+
         # Reset the parameters
         $this->parameters = array();
     }
-    
+
     /**
-     *	@void 
+     *	@void
      *
      *	Add the parameter to the parameter array
-     *	@param string $para  
-     *	@param string $value 
+     *	@param string $para
+     *	@param string $value
      */
     public function bind($para, $value)
     {
@@ -161,7 +164,7 @@ class DB
     }
     /**
      *	@void
-     *	
+     *
      *	Add more parameters to the parameter array
      *	@param array $parray
      */
@@ -186,14 +189,14 @@ class DB
     public function query($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
     {
         $query = trim(str_replace("\r", " ", $query));
-        
+
         $this->Init($query, $params);
-        
+
         $rawStatement = explode(" ", preg_replace("/\s+|\t+|\n+/", " ", $query));
-        
-        # Which SQL statement is used 
+
+        # Which SQL statement is used
         $statement = strtolower($rawStatement[0]);
-        
+
         if ($statement === 'select' || $statement === 'show') {
             return $this->sQuery->fetchAll($fetchmode);
         } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete') {
@@ -202,7 +205,7 @@ class DB
             return NULL;
         }
     }
-    
+
     /**
      *  Returns the last inserted id.
      *  @return string
@@ -211,7 +214,7 @@ class DB
     {
         return $this->pdo->lastInsertId();
     }
-    
+
     /**
      * Starts the transaction
      * @return boolean, true on success or false on failure
@@ -220,7 +223,7 @@ class DB
     {
         return $this->pdo->beginTransaction();
     }
-    
+
     /**
      *  Execute Transaction
      *  @return boolean, true on success or false on failure
@@ -229,7 +232,7 @@ class DB
     {
         return $this->pdo->commit();
     }
-    
+
     /**
      *  Rollback of Transaction
      *  @return boolean, true on success or false on failure
@@ -238,9 +241,9 @@ class DB
     {
         return $this->pdo->rollBack();
     }
-    
+
     /**
-     *	Returns an array which represents a column from the result set 
+     *	Returns an array which represents a column from the result set
      *
      *	@param  string $query
      *	@param  array  $params
@@ -250,18 +253,18 @@ class DB
     {
         $this->Init($query, $params);
         $Columns = $this->sQuery->fetchAll(PDO::FETCH_NUM);
-        
+
         $column = null;
-        
+
         foreach ($Columns as $cells) {
             $column[] = $cells[0];
         }
-        
+
         return $column;
-        
+
     }
     /**
-     *	Returns an array which represents a row from the result set 
+     *	Returns an array which represents a row from the result set
      *
      *	@param  string $query
      *	@param  array  $params
@@ -289,7 +292,7 @@ class DB
         $this->sQuery->closeCursor(); // Frees up the connection to the server so that other SQL statements may be issued
         return $result;
     }
-    /**	
+    /**
      * Writes the log and returns the exception
      *
      * @param  string $message
@@ -301,14 +304,14 @@ class DB
         $exception = 'Unhandled Exception. <br />';
         $exception .= $message;
         $exception .= "<br /> You can find the error back in the log.";
-        
+
         if (!empty($sql)) {
             # Add the Raw SQL to the Log
             $message .= "\r\nRaw SQL : " . $sql;
         }
         # Write into log
         $this->log->write($message);
-        
+
         return $exception;
     }
 }

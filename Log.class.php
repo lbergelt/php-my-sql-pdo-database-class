@@ -1,4 +1,4 @@
-<?php 
+<?php
        /* *
 	* Log 			A logger class which creates logs when an exception is thrown.
 	* @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
@@ -6,18 +6,18 @@
 	* @version      0.1a
 	*/
 	class Log {
-			
+
 		    # @string, Log directory name
 		    	private $path = '/logs/';
-			
+
 		    # @void, Default Constructor, Sets the timezone and path of the log files.
 			public function __construct() {
-				date_default_timezone_set('Europe/Amsterdam');	
+				date_default_timezone_set('Europe/Amsterdam');
 				$this->path  = ((defined('PATH_LOG_DIR')) ? PATH_LOG_DIR : dirname(__FILE__)  . $this->path);
 			}
-			
+
 		   /**
-		    *   @void 
+		    *   @void
 		    *	Creates the log
 		    *
 		    *   @param string $message the message which is written into the log.
@@ -28,7 +28,7 @@
 		    *	 4. Logname is current date(Year - Month - Day).
 		    *	 5. If log exists, edit method called.
 		    *	 6. Edit method modifies the current log.
-		    */	
+		    */
 			public function write($message) {
 				$date = new DateTime();
 				$log = $this->path . $date->format('Y-m-d').".txt";
@@ -45,16 +45,16 @@
 					}
 				}
 				else {
-					  if(mkdir($this->path,0777) === true) 
+					  if(mkdir($this->path,0777) === true)
 					  {
- 						 $this->write($message);  
-					  }	
+ 						 $this->write($message);
+					  }
 				}
 			 }
-			
-			/** 
+
+			/**
 			 *  @void
-			 *  Gets called if log exists. 
+			 *  Gets called if log exists.
 			 *  Modifies current log and adds the message to the log.
 			 *
 			 * @param string $log
