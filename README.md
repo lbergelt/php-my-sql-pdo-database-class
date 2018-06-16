@@ -19,13 +19,13 @@ dbname = yourdatabase
 #### 2. Require the class in your project
 ```php
 <?php
-require("Db.class.php");
+require('db.class.php');
 ```
 #### 3. Create the instance 
 ```php
 <?php
 // The instance
-$db = new Db($host, $user, $pass, $dbname);
+$db = new db($host, $user, $pass, $dbname);
 ```
 #### 4.  Logs - Modify the read/write rights of the root folder
 
@@ -178,7 +178,7 @@ Actually it's just a little ORM class.
 #### Example class :
 ```php
 <?php
-require_once("easyCRUD.class.php");
+require_once('easycrud.class.php');
  
 class YourClass  Extends Crud {
  
@@ -197,7 +197,7 @@ class YourClass  Extends Crud {
 ```php
 <?php
 // First we"ll have create the instance of the class
-$db = new Db($host, $user, $pass, $dbname);
+$db = new db($host, $user, $pass, $dbname);
 $person = new person($db);
  
 // Create new person
@@ -235,11 +235,11 @@ $person->Age  = "20";
 $person->Sex = "F";
 $person->Id  = "4"; 
 // Returns affected rows
-$saved = $person->Save();
+$saved = $person->save();
  
 //  Or give the bindings to the constructor
 $person = new person(array("Firstname"=>"John","age"=>"20","sex"=>"F","Id"=>"4"));
-$saved = $person->Save();
+$saved = $person->save();
  
 // SQL Equivalent
 "UPDATE persons SET Firstname = 'John',Age = 20, Sex = 'F' WHERE Id= 4"
@@ -301,7 +301,7 @@ class Person Extends Crud {
 }
 
 // First we"ll have create the instance of the class
-$db = new Db($host, $user, $pass, $dbname);
+$db = new db($host, $user, $pass, $dbname);
 $person = new person($db);
  
 // Create new person
