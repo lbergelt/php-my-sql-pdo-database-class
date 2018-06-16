@@ -7,7 +7,8 @@
  * @version      0.2ab
  *
  */
-require("Log.class.php");
+require('log.class.php');
+
 class DB
 {
     # @object, The PDO object

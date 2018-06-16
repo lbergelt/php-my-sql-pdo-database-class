@@ -5,9 +5,10 @@
 * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
 * @version      0.1a
 */
-require_once(__DIR__ . '/../Db.class.php');
-class Crud {
+require_once(__DIR__ . '/../db.class.php');
 
+class Crud
+{
 	private $db;
 
 	public $variables;
