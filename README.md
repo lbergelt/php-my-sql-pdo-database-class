@@ -52,6 +52,7 @@ class functions.
 <?php
 // Fetch whole table
 $persons = $db->query("SELECT * FROM persons");
+$nb_persons = $db->numRows();
 ```
 #### Fetching with Bindings (ANTI-SQL-INJECTION):
 Binding parameters is the best way to prevent SQL injection. The class prepares your SQL query and binds the parameters

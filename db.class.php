@@ -217,6 +217,20 @@ class DB
     }
 
     /**
+     * Return nb rows from last query
+     * @return int|null
+     */
+    public function numRows()
+    {
+        $nb = $this->sQuery->rowCount();
+
+        if(is_numeric($nb) && $nb !== false)
+            return $nb;
+
+        return null;
+    }
+
+    /**
      * Starts the transaction
      * @return boolean, true on success or false on failure
      */
