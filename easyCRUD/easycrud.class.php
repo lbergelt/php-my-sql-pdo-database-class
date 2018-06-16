@@ -7,11 +7,15 @@
 */
 require_once(__DIR__ . '/../db.class.php');
 
-class Crud
-{
-	private $db;
+class Crud {
 
-	public $variables;
+	protected $db;
+
+	public $variables = array();
+
+	// Check fields before init object (optional)
+	public $list_fields_table = array();
+	protected $required_fields = array();
 
 	public function __construct(&$db, $data = array()) {
 		$this->db =  $db;
@@ -89,7 +93,10 @@ class Crud
 			$sql = "DELETE FROM " . $this->table . " WHERE " . $this->pk . "= :" . $this->pk. " LIMIT 1" ;
 		}
 
-		return $this->exec($sql, array($this->pk=>$id));
+		$result = $this->exec($sql, array($this->pk=>$id));
+		$this->variables = array(); // Empty bindies
+
+		return $result;
 	}
 
 	public function find($id = "") {
@@ -99,7 +106,7 @@ class Crud
 			$sql = "SELECT * FROM " . $this->table ." WHERE " . $this->pk . "= :" . $this->pk . " LIMIT 1";
 
 			$result = $this->db->row($sql, array($this->pk=>$id));
-			$this->variables = ($result != false) ? $result : null;
+			$this->variables = ($result != false) ? array_change_key_case($result, CASE_LOWER) : array();
 		}
 	}
 	/**
@@ -178,12 +185,57 @@ class Crud
 			$result =  $this->db->query($sql, $this->variables);
 		}
 
-		// Empty bindings
-		$this->variables = array();
+		// Empty bindings (why?)
+		// $this->variables = array();
 
 		return $result;
 	}
 
+	// Check fields before init object (optional)
+	public function check_fields()
+	{
+		// Prerequisites
+		if(empty($this->variables))
+			return !user_error('No fields filled');
+		elseif(empty($this->list_fields_table))
+			return !user_error(sprintf('Class %s: please add list_fields_table in __construct', __CLASS__));
+
+		// Ne pas gérer les champs non supportés
+		$common_fields = array_intersect_key($this->variables, array_flip($this->list_fields_table));
+		$diff_fields = array_diff(array_keys($this->variables), $this->list_fields_table);
+
+		if(!empty($diff_fields))
+			return !user_error("Unsupported fields: ". implode(', ', $diff_fields));
+
+		$this->variables = $common_fields;
+
+
+		// Check missing fields
+		if(!empty($this->required_fields))
+		{
+			$field_missing = array();
+
+			foreach($this->required_fields as $require)
+				if(empty($this->variables[ $require ]))
+					$field_missing[] = $require;
+
+			if(!empty($field_missing))
+				return !user_error("Required fields not filleds: ". implode(', ', $field_missing));
+		}
+
+		return true;
+	}
+
+	// Vérifier qu'un dossier avec le même code n'existe pas déjà
+	public function exists()
+	{
+		$id = $this->variables[$this->pk];
+		$sql = "SELECT {$this->pk} FROM {$this->table} WHERE {$this->pk}= :{$this->pk} LIMIT 1";
+
+		$already_exist = $this->db->row($sql, array($this->pk=>$id));
+
+		return !empty($already_exist);
+	}
 }
 
 ?>

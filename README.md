@@ -270,6 +270,67 @@ $persons = $person->all();
 "SELECT * FROM persons 
 ```
 
+### Check fields
+```php
+<?php
+class Person Extends Crud {
+ 
+  # The table you want to perform the database actions on
+  protected $table = 'persons';
+
+  # Primary Key of the table
+  protected $pk  = 'id';
+
+	public function __construct(&$db)
+	{
+		parent::__construct($db);
+
+		$this->list_fields_table = array
+		(
+			'Id',
+			'Firstname',
+			'Age',
+			'Sex',
+		);
+
+		$this->required_fields = array
+		(
+		 	'Firstname',
+		);
+	}
+}
+
+// First we"ll have create the instance of the class
+$db = new Db($host, $user, $pass, $dbname);
+$person = new person($db);
+ 
+// Create new person
+$person->Sex = 'F';
+
+// Not working: field birthcity can't be use
+$person->birthcity = 'Paris';
+if($person->check_fields())
+	$person->create();
+
+// Not working: required fields not defined: Firstname
+if($person->check_fields())
+	$person->create();
+
+// working
+$person->Firstname = "John";
+if($person->check_fields())
+	$person->create();
+
+// Check with primary key if person exist
+$person->Id = 6;
+if($person->exist())
+	 echo 'The person with ID: "6" exist';
+else echo 'The person with ID: "6" don\'t exist';
+
+```
+
+
+
 ## Copyright and license
 #### Code released under Beerware
 
