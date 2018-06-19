@@ -28,6 +28,7 @@ class DB
 
     # @array, The parameters of the SQL query
     private $parameters;
+    public $table = array();
 
     /**
      *   Default Constructor
@@ -51,6 +52,7 @@ class DB
 
         $this->Connect();
         $this->parameters = array();
+        $this->table['variable'] = 'variable';
     }
 
     /**
@@ -200,7 +202,7 @@ class DB
 
         if ($statement === 'select' || $statement === 'show') {
             return $this->sQuery->fetchAll($fetchmode);
-        } elseif ($statement === 'insert' || $statement === 'update' || $statement === 'delete') {
+        } elseif ($statement === 'insert' || $statement === 'replace' || $statement === 'update' || $statement === 'delete') {
             return $this->sQuery->rowCount();
         } else {
             return NULL;
@@ -307,6 +309,7 @@ class DB
         $this->sQuery->closeCursor(); // Frees up the connection to the server so that other SQL statements may be issued
         return $result;
     }
+
     /**
      * Writes the log and returns the exception
      *
@@ -328,6 +331,63 @@ class DB
         $this->log->write($message);
 
         return $exception;
+    }
+
+
+    //-- Gestionnaire de variable stocké en base pour projet custom -----------------------------------------
+    /*
+        CREATE TABLE IF NOT EXISTS `variable` (
+          `name` varchar(100) NOT NULL,
+          `value` text,
+          `serialize` tinyint(1) unsigned NOT NULL DEFAULT '0',
+          `dateUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Diverses variables et options pour l''application';
+
+        ALTER TABLE `variable` ADD PRIMARY KEY (`name`);
+    */
+    public function variable_get($var_name, $value_defaut = null)
+    {
+        $params = array('name' => $var_name);
+        $result = $this->query
+        ("
+            SELECT value, serialize
+            FROM `{$this->table['variable']}`
+            WHERE name = :name
+            LIMIT 1
+        ", $params);
+
+        if(isset($result[0]['value']))
+                return (($result[0]['serialize']) ? unserialize($result[0]['value']) : $result[0]['value']);
+        else    return $value_defaut;
+    }
+
+    public function variable_save($var_name, $value)
+    {
+        $params = array
+        (
+            'name'      => $var_name,
+            'value'     => $value,
+            'serialize' => 0,
+        );
+
+        if(is_array($value) || is_object($value))
+        {
+            $params['serialize'] = 1;
+            $params['value'] = serialize($value);
+        }
+
+        $sql = "REPLACE INTO `{$this->table['variable']}`
+                         SET `name` = :name,
+                             `value` = :value,
+                             `serialize` = :serialize
+        ";
+
+        return $this->query($sql, $params);
+    }
+
+    public function variable_delete($var_name)
+    {
+        return $this->query("DELETE FROM `{$this->table['variable']}` WHERE name = :name LIMIT 1", array('name' => $var_name));
     }
 }
 

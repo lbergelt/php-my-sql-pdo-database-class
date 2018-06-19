@@ -13,7 +13,7 @@ A database class for PHP-MySQL which uses the PDO extension.
 [SQL]
 host = 127.0.0.1
 user = root
-password = 
+password =
 dbname = yourdatabase
 ```
 #### 2. Require the class in your project
@@ -21,7 +21,7 @@ dbname = yourdatabase
 <?php
 require('db.class.php');
 ```
-#### 3. Create the instance 
+#### 3. Create the instance
 ```php
 <?php
 // The instance
@@ -37,8 +37,8 @@ The log file is a simple plain text file with the current date('year-month-day')
 
 ## Examples
 Below some examples of the basic functions of the database class. I've included a SQL dump so you can easily test the database
-class functions. 
-#### The persons table 
+class functions.
+#### The persons table
 | id | firstname | lastname | sex | age
 |:-----------:|:------------:|:------------:|:------------:|:------------:|
 | 1       |        John |     Doe    | M | 19
@@ -61,7 +61,7 @@ afterwards.
 There are three different ways to bind parameters.
 ```php
 <?php
-// 1. Read friendly method  
+// 1. Read friendly method
 $db->bind("id","1");
 $db->bind("firstname","John");
 $person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND id = :id");
@@ -103,7 +103,7 @@ $firstname = $db->single("SELECT firstname FROM Persons WHERE id = :id");
 #### Using the like keyword
 ```php
 <?php
-// Using Like 
+// Using Like
 // Notice the wildcard at the end of the value!!
 $like = $db->query("SELECT * FROM Persons WHERE Firstname LIKE :firstname ", array("firstname"=>"sekit%"));
 ```
@@ -119,12 +119,12 @@ $like = $db->query("SELECT * FROM Persons WHERE Firstname LIKE :firstname ", arr
 $names    =  $db->column("SELECT Firstname FROM Persons");
 ```
 ##### Result
-|firstname | 
+|firstname |
 |:-----------:
-|        John 
-|        Bob  
-|        Zoe  
-|        Kona 
+|        John
+|        Bob
+|        Zoe
+|        Kona
 |        Kader
 ### Delete / Update / Insert
 When executing the delete, update, or insert statement by using the query method the affected rows will be returned.
@@ -140,7 +140,7 @@ $update   =  $db->query("UPDATE Persons SET firstname = :f WHERE Id = :id", arra
 // Insert
 $insert   =  $db->query("INSERT INTO Persons(Firstname,Age) VALUES(:f,:age)", array("f"=>"Vivek","age"=>"20"));
 
-// Do something with the data 
+// Do something with the data
 if($insert > 0 ) {
   return 'Succesfully created a new person !';
 }
@@ -161,14 +161,52 @@ Here an example :
 
   print_r($person_num);
   // Array ( [0] => 1 [1] => Johny [2] => Doe [3] => M [4] => 19 )
-    
+
 ```
 More info about the PDO fetchstyle : http://php.net/manual/en/pdostatement.fetch.php
 
 
+## Save a variable in database
+Before use this method, please create the table:
+
+```sql
+CREATE TABLE IF NOT EXISTS `variable` (
+  `name` varchar(100) NOT NULL,
+  `value` text,
+  `serialize` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `dateUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Diverses variables et options pour l''application';
+
+ALTER TABLE `variable` ADD PRIMARY KEY (`name`);
+```
+
+You can save/get/delete any variables (text, int, array, object) in this table, with this method:
+
+```sql
+<?php
+$name = 'var_name';
+$pdo->table['variable'] = 'variable'; // [Optionnal] You can change the table name
+
+// Save
+$value = array('current_script' => basename($_SERVER['PHP_SELF']), 'time' => time());
+$pdo->variable_save($name, $value);
+
+// Get
+$myvar = $pdo->variable_get($name, 'default_value_if_not_exists');
+print_r($myvar);
+
+// Delete var
+$pdo->variable_delete($name);
+?>
+```
+This method can be use to store variables or configurations application (like `wp_options` for wordpress).
+
+
+
+
 EasyCRUD
 ============================
-The easyCRUD is a class which you can use to easily execute basic SQL operations like(insert, update, select, delete) on your database. 
+The easyCRUD is a class which you can use to easily execute basic SQL operations like(insert, update, select, delete) on your database.
 It uses the database class I've created to execute the SQL queries.
 
 Actually it's just a little ORM class.
@@ -180,15 +218,15 @@ Actually it's just a little ORM class.
 ```php
 <?php
 require_once('easycrud.class.php');
- 
+
 class YourClass  Extends Crud {
- 
+
   # The table you want to perform the database actions on
   protected $table = 'persons';
 
   # Primary Key of the table
   protected $pk  = 'id';
-  
+
 }
 ```
 
@@ -200,17 +238,17 @@ class YourClass  Extends Crud {
 // First we"ll have create the instance of the class
 $db = new db($host, $user, $pass, $dbname);
 $person = new person($db);
- 
+
 // Create new person
 $person->Firstname  = "Kona";
 $person->Age        = "20";
 $person->Sex        = "F";
 $created            = $person->Create();
- 
+
 //  Or give the bindings to the constructor
 $person  = new person($db, array("Firstname"=>"Kona","age"=>"20","sex"=>"F"));
 $created = $person->Create();
- 
+
 // SQL Equivalent
 "INSERT INTO persons (Firstname,Age,Sex) VALUES ('Kona','20','F')"
 ```
@@ -220,10 +258,10 @@ $created = $person->Create();
 // Delete person
 $person->Id  = "17";
 $deleted     = $person->Delete();
- 
+
 // Shorthand method, give id as parameter
 $deleted     = $person->Delete(17);
- 
+
 // SQL Equivalent
 "DELETE FROM persons WHERE Id = 17 LIMIT 1"
 ```
@@ -234,14 +272,14 @@ $deleted     = $person->Delete(17);
 $person->Firstname = "John";
 $person->Age  = "20";
 $person->Sex = "F";
-$person->Id  = "4"; 
+$person->Id  = "4";
 // Returns affected rows
 $saved = $person->save();
- 
+
 //  Or give the bindings to the constructor
 $person = new person(array("Firstname"=>"John","age"=>"20","sex"=>"F","Id"=>"4"));
 $saved = $person->save();
- 
+
 // SQL Equivalent
 "UPDATE persons SET Firstname = 'John',Age = 20, Sex = 'F' WHERE Id= 4"
 ```
@@ -254,10 +292,10 @@ $person->find();
 
 echo $person->Firstname;
 // Johny
- 
+
 // Shorthand method, give id as parameter
-$person->find(1); 
- 
+$person->find(1);
+
 // SQL Equivalent
 "SELECT * FROM persons WHERE Id = 1"
 ```
@@ -265,17 +303,17 @@ $person->find(1);
 ```php
 <?php
 // Finding all person
-$persons = $person->all(); 
- 
+$persons = $person->all();
+
 // SQL Equivalent
-"SELECT * FROM persons 
+"SELECT * FROM persons
 ```
 
 ### Check fields
 ```php
 <?php
 class Person Extends Crud {
- 
+
   # The table you want to perform the database actions on
   protected $table = 'persons';
 
@@ -304,7 +342,7 @@ class Person Extends Crud {
 // First we"ll have create the instance of the class
 $db = new db($host, $user, $pass, $dbname);
 $person = new person($db);
- 
+
 // Create new person
 $person->Sex = 'F';
 

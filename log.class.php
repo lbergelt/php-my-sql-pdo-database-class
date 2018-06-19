@@ -15,7 +15,7 @@ class Log
 	public function __construct()
 	{
 		date_default_timezone_set('Europe/Amsterdam');
-		$this->path  = ((defined('PATH_LOG_DIR')) ? PATH_LOG_DIR : dirname(__FILE__)  . $this->path);
+		$this->path  = ((defined('PATH_LOG_DIR')) ? PATH_LOG_DIR.'/' : dirname(__FILE__)  . $this->path);
 	}
 
    /**
@@ -34,7 +34,7 @@ class Log
 	public function write($message)
 	{
 		$date = new DateTime();
-		$log = $this->path . $date->format('Y-m-d').".txt";
+		$log = $this->path . 'pdo-error-' . $date->format('Y-m-d').'.log';
 
 		if(is_dir($this->path))
 		{
