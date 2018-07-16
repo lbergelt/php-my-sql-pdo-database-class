@@ -120,12 +120,14 @@ class Crud {
 	* // Now we can use for each on $found_user_array.
 	* Other functionalities ex: Support for LIKE, >, <, >=, <= ... Are not yet supported.
 	*/
-	public function search($fields = array(), $sort = array()) {
+	public function search($fields = array(), $sort = array(), $limit = 0)
+	{
 		$bindings = empty($fields) ? $this->variables : $fields;
 
 		$sql = "SELECT * FROM " . $this->table;
 
-		if (!empty($bindings)) {
+		if(!empty($bindings))
+		{
 			$fieldsvals = array();
 			$columns = array_keys($bindings);
 			foreach($columns as $column) {
@@ -134,13 +136,18 @@ class Crud {
 			$sql .= " WHERE " . implode(" AND ", $fieldsvals);
 		}
 
-		if (!empty($sort)) {
+		if(!empty($sort))
+		{
 			$sortvals = array();
 			foreach ($sort as $key => $value) {
 				$sortvals[] = $key . " " . $value;
 			}
 			$sql .= " ORDER BY " . implode(", ", $sortvals);
 		}
+
+		if(!empty($limit))
+			$sql .= " LIMIT {$limit}";
+
 		return $this->exec($sql, $bindings);
 	}
 
