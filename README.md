@@ -1,6 +1,3 @@
-I am not maintaining this repository anymore and I would like to request you to find a better repo or make a fork of this repository!
-============================
-
 PDO Database Class
 ============================
 
@@ -25,15 +22,11 @@ require('db.class.php');
 ```php
 <?php
 // The instance
-$db = new db($host, $user, $pass, $dbname);
+$db = new db($host, $user, $pass, $dbname, $debug = false);
 ```
-#### 4.  Logs - Modify the read/write rights of the root folder
+#### 4.  Display error
+The original log class was removed and replace by php classic function: [trigger_error](http://www.php.net/manual/en/function.trigger-error.php). With this use, the error are log in the error_log system. On `$db = new db`, set $debug to true to display query request on error.
 
-Everytime an exception is thrown by the database class a log file gets created or modified.
-These logs are stored in the logs directory, you can change the directory path with ``define('PATH_LOG_DIR', 'somedir/')``. Which means the database class needs write access for the logs folder.
-If the files are on a webserver you'll have to modify the rights of the root folder otherwise you'll get a "Permission denied" error.
-
-The log file is a simple plain text file with the current date('year-month-day') as filename.
 
 ## Examples
 Below some examples of the basic functions of the database class. I've included a SQL dump so you can easily test the database

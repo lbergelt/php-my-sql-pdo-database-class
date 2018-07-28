@@ -4,10 +4,9 @@
  *
  * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @git 		https://github.com/wickyaswal/PHP-MySQL-PDO-Database-Class
- * @version      0.2ab
+ * @version      0.4
  *
  */
-require('log.class.php');
 
 class DB
 {
@@ -24,7 +23,7 @@ class DB
     private $bConnected = false;
 
     # @object, Object for logging exceptions
-    private $log;
+    private $debug;
 
     # @array, The parameters of the SQL query
     private $parameters;
@@ -39,8 +38,8 @@ class DB
      */
     public function __construct($host, $user, $pass, $dbname, $debug = false)
     {
-        if($debug)
-            $this->log = new Log();
+        // Display mysql query on error
+        $this->debug = $debug;
 
         $this->settings = array
         (
@@ -82,11 +81,9 @@ class DB
             # Connection succeeded, set the boolean to true.
             $this->bConnected = true;
         }
-        catch (PDOException $e) {
-            # Write into log
-            if(!is_null($this->log))
-                echo $this->ExceptionLog($e->getMessage());
-            die();
+        catch (PDOException $e)
+        {
+            trigger_error("[Mysql error] {$e->getMessage()}");
         }
     }
     /*
@@ -143,15 +140,18 @@ class DB
             # Execute SQL
             $this->sQuery->execute();
         }
-        catch (PDOException $e) {
-            # Write into log and display Exception
-            if(!is_null($this->log))
-                echo $this->ExceptionLog($e->getMessage(), $query);
-            die();
+        catch (PDOException $e)
+        {
+            $msg = '[Mysql error] '.$e->getMessage();
+            if($this->debug)
+                $msg .= sprintf(', query: "%s"', $query);
+
+            return !trigger_error($msg);
         }
 
         # Reset the parameters
         $this->parameters = array();
+        return true;
     }
 
     /**
@@ -193,7 +193,8 @@ class DB
     {
         $query = trim(str_replace("\r", " ", $query));
 
-        $this->Init($query, $params);
+        if(!$this->Init($query, $params))
+            return false;
 
         $rawStatement = explode(" ", preg_replace("/\s+|\t+|\n+/", " ", $query));
 
@@ -224,6 +225,9 @@ class DB
      */
     public function numRows()
     {
+        if(is_null($this->sQuery))
+            return null;
+
         $nb = $this->sQuery->rowCount();
 
         if(is_numeric($nb) && $nb !== false)
@@ -308,29 +312,6 @@ class DB
         $result = $this->sQuery->fetchColumn();
         $this->sQuery->closeCursor(); // Frees up the connection to the server so that other SQL statements may be issued
         return $result;
-    }
-
-    /**
-     * Writes the log and returns the exception
-     *
-     * @param  string $message
-     * @param  string $sql
-     * @return string
-     */
-    private function ExceptionLog($message, $sql = "")
-    {
-        $exception = 'Unhandled Exception. <br />';
-        $exception .= $message;
-        $exception .= "<br /> You can find the error back in the log.";
-
-        if (!empty($sql)) {
-            # Add the Raw SQL to the Log
-            $message .= "\r\nRaw SQL : " . $sql;
-        }
-        # Write into log
-        $this->log->write($message);
-
-        return $exception;
     }
 
 
