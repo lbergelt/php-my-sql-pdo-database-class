@@ -3,15 +3,18 @@
 * Easy Crud  -  This class kinda works like ORM. Just created for fun :)
 *
 * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
-* @version      0.1a
+* @version      0.5
 */
 require_once(__DIR__ . '/../db.class.php');
 
-class Crud {
-
+abstract class Crud
+{
 	protected $db;
-
 	public $variables = array();
+
+	// Declare on CRUD child
+	protected $pk;
+	protected $table;
 
 	// Check fields before init object (optional)
 	public $list_fields_table = array();
@@ -23,7 +26,7 @@ class Crud {
 	}
 
 	public function __set($name,$value){
-		if(strtolower($name) === $this->pk) {
+		if($name === $this->pk) {
 			$this->variables[$this->pk] = $value;
 		}
 		else {
@@ -33,37 +36,52 @@ class Crud {
 
 	public function __get($name)
 	{
-		if(is_array($this->variables)) {
-			if(array_key_exists($name,$this->variables)) {
-				return $this->variables[$name];
-			}
-		}
+		if(isset($this->$name)) // use magic method: __isset
+			return $this->variables[$name];
 
 		return null;
 	}
 
+	public function __isset($name)
+	{
+		if(is_array($this->variables) && array_key_exists($name, $this->variables))
+			return true;
 
-	public function save($id = "0") {
-		$this->variables[$this->pk] = (empty($this->variables[$this->pk])) ? $id : $this->variables[$this->pk];
+		return false;
+	}
+
+	public function __unset($name)
+	{
+		if(isset($this->$name)) // use magic method: __isset
+			unset($this->variables[$name]);
+	}
+
+	public function save($id = null)
+	{
+		if(empty($this->variables[$this->pk]) && !empty($id))
+			$this->variables[$this->pk] = $id;
 
 		$fieldsvals = '';
 		$columns = array_keys($this->variables);
 
 		foreach($columns as $column)
 		{
-			if($column !== $this->pk)
-			$fieldsvals .= $column . " = :". $column . ",";
+			if($column === $this->pk)
+				continue;
+
+			$fieldsvals .= "{$column} = :{$column},";
 		}
 
 		$fieldsvals = substr_replace($fieldsvals , '', -1);
 
-		if(count($columns) > 1 ) {
-
-			$sql = "UPDATE " . $this->table .  " SET " . $fieldsvals . " WHERE " . $this->pk . "= :" . $this->pk;
-			if($id === "0" && $this->variables[$this->pk] === "0") {
+		if(count($columns) > 1 )
+		{
+			if(empty($this->variables[$this->pk]))
+			{
 				unset($this->variables[$this->pk]);
-				$sql = "UPDATE " . $this->table .  " SET " . $fieldsvals;
+				$sql = "UPDATE {$this->table} SET {$fieldsvals}";
 			}
+			else $sql = "UPDATE {$this->table} SET {$fieldsvals} WHERE {$this->pk} = :{$this->pk}";
 
 			return $this->exec($sql);
 		}

@@ -311,7 +311,7 @@ class Person Extends Crud {
   protected $table = 'persons';
 
   # Primary Key of the table
-  protected $pk  = 'id';
+  protected $pk  = 'Id';
 
 	public function __construct(&$db)
 	{
