@@ -148,9 +148,12 @@ class DB
 
             return !trigger_error($msg);
         }
+        finally
+        {
+            # Reset the parameters
+            $this->parameters = array();
+        }
 
-        # Reset the parameters
-        $this->parameters = array();
         return true;
     }
 
