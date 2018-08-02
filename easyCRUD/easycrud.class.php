@@ -56,6 +56,11 @@ abstract class Crud
 			unset($this->variables[$name]);
 	}
 
+	public function get_table()
+	{
+		return $this->table;
+	}
+
 	public function save($id = null)
 	{
 		if(empty($this->variables[$this->pk]) && !empty($id))
@@ -254,6 +259,9 @@ abstract class Crud
 	// Vérifier qu'un dossier avec le même code n'existe pas déjà
 	public function exists()
 	{
+		if(empty($this->variables[$this->pk]))
+			return false;
+
 		$id = $this->variables[$this->pk];
 		$sql = "SELECT {$this->pk} FROM {$this->table} WHERE {$this->pk}= :{$this->pk} LIMIT 1";
 
