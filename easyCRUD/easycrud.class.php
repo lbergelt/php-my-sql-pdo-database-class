@@ -3,7 +3,7 @@
 * Easy Crud  -  This class kinda works like ORM. Just created for fun :)
 *
 * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
-* @version      0.5
+* @version      0.6
 */
 require_once(__DIR__ . '/../db.class.php');
 
@@ -94,7 +94,8 @@ abstract class Crud
 		return null;
 	}
 
-	public function create() {
+	public function create()
+	{
 		$bindings   	= $this->variables;
 
 		if(!empty($bindings)) {
@@ -102,19 +103,19 @@ abstract class Crud
 			$fieldsvals =  array(implode(",",$fields),":" . implode(",:",$fields));
 			$sql 		= "INSERT INTO ".$this->table." (".$fieldsvals[0].") VALUES (".$fieldsvals[1].")";
 		}
-		else {
-			$sql 		= "INSERT INTO ".$this->table." () VALUES ()";
-		}
+		else $sql 		= "INSERT INTO ".$this->table." () VALUES ()";
 
 		return $this->exec($sql);
 	}
 
-	public function delete($id = "") {
-		$id = (empty($this->variables[$this->pk])) ? $id : $this->variables[$this->pk];
+	public function delete($id = null)
+	{
+		$id = ((!empty($id)) ? $id : $this->variables[$this->pk]);
 
-		if(!empty($id)) {
-			$sql = "DELETE FROM " . $this->table . " WHERE " . $this->pk . "= :" . $this->pk. " LIMIT 1" ;
-		}
+		if(empty($id))
+			return false;
+
+		$sql = "DELETE FROM {$this->table} WHERE {$this->pk} = :{$this->pk} LIMIT 1" ;
 
 		$result = $this->exec($sql, array($this->pk=>$id));
 		$this->variables = array(); // Empty bindies
@@ -122,16 +123,20 @@ abstract class Crud
 		return $result;
 	}
 
-	public function find($id = "") {
-		$id = (empty($this->variables[$this->pk])) ? $id : $this->variables[$this->pk];
+	public function find($id = null)
+	{
+		$id = ((!empty($id)) ? $id : $this->variables[$this->pk]);
 
-		if(!empty($id)) {
-			$sql = "SELECT * FROM " . $this->table ." WHERE " . $this->pk . "= :" . $this->pk . " LIMIT 1";
+		if(!empty($id))
+		{
+			$sql = "SELECT * FROM {$this->table} WHERE {$this->pk} = :{$this->pk} LIMIT 1";
 
 			$result = $this->db->row($sql, array($this->pk=>$id));
 			$this->variables = ($result != false) ? array_change_key_case($result, CASE_LOWER) : array();
 		}
+		else $this->variables = null;
 	}
+
 	/**
 	* @param array $fields.
 	* @param array $sort.
