@@ -2,8 +2,9 @@
 /**
 * Easy Crud  -  This class kinda works like ORM. Just created for fun :)
 *
-* @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
-* @version      0.6
+* @author		Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
+* @contrib 		jgauthi (https://github.com/jgauthi/)
+* @version      0.7
 */
 require_once(__DIR__ . '/../db.class.php');
 
@@ -12,22 +13,22 @@ abstract class Crud
 	protected $db;
 	public $variables = array();
 
-	// Declare on CRUD child
-	protected $pk;
-	protected $table;
+	// (Abstract) MUST BE Declare on CRUD child
+	const TABLE = 'table';	# Your Table name
+	const PK = 'id';		# Primary Key of the Table
 
 	// Check fields before init object (optional)
 	public $list_fields_table = array();
 	protected $required_fields = array();
 
-	public function __construct(&$db, $data = array()) {
+	public function __construct(Db &$db, $data = array()) {
 		$this->db =  $db;
 		$this->variables  = $data;
 	}
 
 	public function __set($name,$value){
-		if($name === $this->pk) {
-			$this->variables[$this->pk] = $value;
+		if($name === static::PK) {
+			$this->variables[static::PK] = $value;
 		}
 		else {
 			$this->variables[$name] = $value;
@@ -56,22 +57,17 @@ abstract class Crud
 			unset($this->variables[$name]);
 	}
 
-	public function get_table()
-	{
-		return $this->table;
-	}
-
 	public function save($id = null)
 	{
-		if(empty($this->variables[$this->pk]) && !empty($id))
-			$this->variables[$this->pk] = $id;
+		if(empty($this->variables[static::PK]) && !empty($id))
+			$this->variables[static::PK] = $id;
 
 		$fieldsvals = '';
 		$columns = array_keys($this->variables);
 
 		foreach($columns as $column)
 		{
-			if($column === $this->pk)
+			if($column === static::PK)
 				continue;
 
 			$fieldsvals .= "{$column} = :{$column},";
@@ -81,12 +77,12 @@ abstract class Crud
 
 		if(count($columns) > 1 )
 		{
-			if(empty($this->variables[$this->pk]))
+			if(empty($this->variables[static::PK]))
 			{
-				unset($this->variables[$this->pk]);
-				$sql = "UPDATE {$this->table} SET {$fieldsvals}";
+				unset($this->variables[static::PK]);
+				$sql = "UPDATE `".static::TABLE."` SET {$fieldsvals}";
 			}
-			else $sql = "UPDATE {$this->table} SET {$fieldsvals} WHERE {$this->pk} = :{$this->pk}";
+			else $sql = "UPDATE `".static::TABLE."` SET {$fieldsvals} WHERE ".static::PK." = :".static::PK."";
 
 			return $this->exec($sql);
 		}
@@ -101,23 +97,23 @@ abstract class Crud
 		if(!empty($bindings)) {
 			$fields     =  array_keys($bindings);
 			$fieldsvals =  array(implode(",",$fields),":" . implode(",:",$fields));
-			$sql 		= "INSERT INTO ".$this->table." (".$fieldsvals[0].") VALUES (".$fieldsvals[1].")";
+			$sql 		= "INSERT INTO `".static::TABLE."` ({$fieldsvals[0]}) VALUES ({$fieldsvals[1]})";
 		}
-		else $sql 		= "INSERT INTO ".$this->table." () VALUES ()";
+		else $sql 		= "INSERT INTO `".static::TABLE."` () VALUES ()";
 
 		return $this->exec($sql);
 	}
 
 	public function delete($id = null)
 	{
-		$id = ((!empty($id)) ? $id : $this->variables[$this->pk]);
+		$id = ((!empty($id)) ? $id : $this->variables[static::PK]);
 
 		if(empty($id))
 			return false;
 
-		$sql = "DELETE FROM {$this->table} WHERE {$this->pk} = :{$this->pk} LIMIT 1" ;
+		$sql = "DELETE FROM `".static::TABLE."` WHERE ".static::PK." = :".static::PK." LIMIT 1" ;
 
-		$result = $this->exec($sql, array($this->pk=>$id));
+		$result = $this->exec($sql, array(static::PK => $id));
 		$this->variables = array(); // Empty bindies
 
 		return $result;
@@ -125,13 +121,13 @@ abstract class Crud
 
 	public function find($id = null)
 	{
-		$id = ((!empty($id)) ? $id : $this->variables[$this->pk]);
+		$id = ((!empty($id)) ? $id : $this->variables[static::PK]);
 
 		if(!empty($id))
 		{
-			$sql = "SELECT * FROM {$this->table} WHERE {$this->pk} = :{$this->pk} LIMIT 1";
+			$sql = "SELECT * FROM `".static::TABLE."` WHERE ".static::PK." = :".static::PK." LIMIT 1";
 
-			$result = $this->db->row($sql, array($this->pk=>$id));
+			$result = $this->db->row($sql, array(static::PK => $id));
 			$this->variables = ($result != false) ? array_change_key_case($result, CASE_LOWER) : array();
 		}
 		else $this->variables = null;
@@ -143,7 +139,7 @@ abstract class Crud
 	* @return array of Collection.
 	* Example: $user = new User;
 	* $found_user_array = $user->search(array('sex' => 'Male', 'age' => '18'), array('dob' => 'DESC'));
-	* // Will produce: SELECT * FROM {$this->table_name} WHERE sex = :sex AND age = :age ORDER BY dob DESC;
+	* // Will produce: SELECT * FROM ".static::TABLE." WHERE sex = :sex AND age = :age ORDER BY dob DESC;
 	* // And rest is binding those params with the Query. Which will return an array.
 	* // Now we can use for each on $found_user_array.
 	* Other functionalities ex: Support for LIKE, >, <, >=, <= ... Are not yet supported.
@@ -152,7 +148,7 @@ abstract class Crud
 	{
 		$bindings = empty($fields) ? $this->variables : $fields;
 
-		$sql = "SELECT * FROM " . $this->table;
+		$sql = "SELECT * FROM " . static::TABLE;
 
 		if(!empty($bindings))
 		{
@@ -180,32 +176,32 @@ abstract class Crud
 	}
 
 	public function all(){
-		return $this->db->query("SELECT * FROM " . $this->table);
+		return $this->db->query("SELECT * FROM " . static::TABLE);
 	}
 
 	public function min($field)  {
 		if($field)
-		return $this->db->single("SELECT min(" . $field . ")" . " FROM " . $this->table);
+		return $this->db->single("SELECT min({$field}) FROM " . static::TABLE);
 	}
 
 	public function max($field)  {
 		if($field)
-		return $this->db->single("SELECT max(" . $field . ")" . " FROM " . $this->table);
+		return $this->db->single("SELECT max({$field}) FROM " . static::TABLE);
 	}
 
 	public function avg($field)  {
 		if($field)
-		return $this->db->single("SELECT avg(" . $field . ")" . " FROM " . $this->table);
+		return $this->db->single("SELECT avg({$field}) FROM " . static::TABLE);
 	}
 
 	public function sum($field)  {
 		if($field)
-		return $this->db->single("SELECT sum(" . $field . ")" . " FROM " . $this->table);
+		return $this->db->single("SELECT sum({$field}) FROM " . static::TABLE);
 	}
 
 	public function count($field)  {
 		if($field)
-		return $this->db->single("SELECT count(" . $field . ")" . " FROM " . $this->table);
+		return $this->db->single("SELECT count({$field}) FROM " . static::TABLE);
 	}
 
 
@@ -264,13 +260,13 @@ abstract class Crud
 	// Vérifier qu'un dossier avec le même code n'existe pas déjà
 	public function exists()
 	{
-		if(empty($this->variables[$this->pk]))
+		if(empty($this->variables[static::PK]))
 			return false;
 
-		$id = $this->variables[$this->pk];
-		$sql = "SELECT {$this->pk} FROM {$this->table} WHERE {$this->pk}= :{$this->pk} LIMIT 1";
+		$id = $this->variables[static::PK];
+		$sql = "SELECT ".static::PK." FROM `".static::TABLE."` WHERE ".static::PK."= :".static::PK." LIMIT 1";
 
-		$already_exist = $this->db->row($sql, array($this->pk=>$id));
+		$already_exist = $this->db->row($sql, array(static::PK => $id));
 
 		return !empty($already_exist);
 	}

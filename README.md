@@ -212,13 +212,13 @@ Actually it's just a little ORM class.
 <?php
 require_once('easycrud.class.php');
 
-class YourClass  Extends Crud {
-
+class YourClass Extends Crud
+{
   # The table you want to perform the database actions on
-  protected $table = 'persons';
+  const TABLE = 'persons';
 
   # Primary Key of the table
-  protected $pk  = 'id';
+  const PK = 'Id';
 
 }
 ```
@@ -299,36 +299,31 @@ $person->find(1);
 $persons = $person->all();
 
 // SQL Equivalent
-"SELECT * FROM persons
+"SELECT * FROM persons"
 ```
 
 ### Check fields
 ```php
 <?php
-class Person Extends Crud {
-
-  # The table you want to perform the database actions on
-  protected $table = 'persons';
-
-  # Primary Key of the table
-  protected $pk  = 'Id';
+class Person Extends Crud
+{
+  const TABLE = 'persons';
+  const PK = 'Id';
 
 	public function __construct(&$db)
 	{
 		parent::__construct($db);
 
-		$this->list_fields_table = array
-		(
-			'Id',
+		$this->list_fields_table = [
+			self::PK,
 			'Firstname',
 			'Age',
 			'Sex',
-		);
+		];
 
-		$this->required_fields = array
-		(
+		$this->required_fields = [
 		 	'Firstname',
-		);
+		];
 	}
 }
 
@@ -361,8 +356,12 @@ else echo 'The person with ID: "6" don\'t exist';
 
 ```
 
+### Use table name / primary key outside the entity
+```php
+<?php
+$result = $db->query('SELECT '. Person::PK .', Firstname, age, sex FROM '. Person::TABLE);
+```
 
 
 ## Copyright and license
 #### Code released under Beerware
-
