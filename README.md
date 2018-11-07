@@ -296,10 +296,12 @@ $person->find(1);
 ```php
 <?php
 // Finding all person
-$persons = $person->all();
+// Arg1: Order (optional)
+// Arg2: Display primary key in array keys result (optional, false by default)
+$persons = $person->all(['lastname' => 'ASC', 'firstname' => 'ASC'], false);
 
 // SQL Equivalent
-"SELECT * FROM persons"
+"SELECT * FROM persons ORDER BY lastname ASC, firstname ASC"
 ```
 
 ### Check fields

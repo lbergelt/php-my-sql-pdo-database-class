@@ -4,7 +4,7 @@
 *
 * @author		Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
 * @contrib 		jgauthi (https://github.com/jgauthi/)
-* @version      0.7
+* @version      0.8
 */
 require_once(__DIR__ . '/../db.class.php');
 
@@ -163,10 +163,10 @@ abstract class Crud
 		if(!empty($sort))
 		{
 			$sortvals = array();
-			foreach ($sort as $key => $value) {
-				$sortvals[] = $key . " " . $value;
-			}
-			$sql .= " ORDER BY " . implode(", ", $sortvals);
+			foreach($sort as $key => $value)
+				$sortvals[] = $key.' '.$value;
+
+			$sql .= ' ORDER BY ' . implode(', ', $sortvals);
 		}
 
 		if(!empty($limit))
@@ -175,8 +175,29 @@ abstract class Crud
 		return $this->exec($sql, $bindings);
 	}
 
-	public function all(){
-		return $this->db->query("SELECT * FROM " . static::TABLE);
+	public function all($sort = array(), $array_keys_primary_key = false)
+	{
+		$select = '*';
+		$args = null;
+		$fetchmode = \PDO::FETCH_ASSOC;
+
+		if($array_keys_primary_key)
+		{
+			$select = static::PK.' as pdo_id, '. static::TABLE .'.*';
+			$fetchmode = \PDO::FETCH_ASSOC|\PDO::FETCH_GROUP|\PDO::FETCH_UNIQUE;
+		}
+
+		$sql = "SELECT {$select} FROM " . static::TABLE;
+		if(!empty($sort))
+		{
+			$sortvals = array();
+			foreach($sort as $key => $value)
+				$sortvals[] = $key.' '.$value;
+
+			$sql .= ' ORDER BY ' . implode(', ', $sortvals);
+		}
+
+		return $this->db->query($sql, $args, $fetchmode);
 	}
 
 	public function min($field)  {
