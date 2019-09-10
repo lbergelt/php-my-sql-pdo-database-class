@@ -364,6 +364,16 @@ else echo 'The person with ID: "6" don\'t exist';
 $result = $db->query('SELECT '. Person::PK .', Firstname, age, sex FROM '. Person::TABLE);
 ```
 
+### Get PDO Var
+You can get the PDO var to use with another lib _(like [fixtures](https://github.com/linkorb/haigha) by examples)_.
+
+```php
+<?php
+$pdo = $db->getPdoVar();
+
+$request = new AnotherLib($pdo);
+```
+
 
 ## Copyright and license
 #### Code released under Beerware

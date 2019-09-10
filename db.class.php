@@ -66,11 +66,11 @@ class DB
     private function Connect()
     {
         //$this->settings = parse_ini_file("settings.ini.php");
-        $dsn            = 'mysql:dbname=' . $this->settings["dbname"] . ';host=' . $this->settings["host"] . '';
+        $dsn            = 'mysql:dbname=' . $this->settings['dbname'] . ';host=' . $this->settings['host'] . '';
         try {
             # Read settings from INI file, set UTF8
-            $this->pdo = new PDO($dsn, $this->settings["user"], $this->settings["password"], array(
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+            $this->pdo = new PDO($dsn, $this->settings['user'], $this->settings["password"], array(
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
             ));
 
             # We can now log any exceptions on Fatal error.
@@ -158,6 +158,17 @@ class DB
         return true;
     }
 
+    /*
+     * Return PDO var: to use with other library
+     */
+    public function getPdoVar()
+    {
+        return $this->pdo;
+    }
+
+
+    //-- Mysql Requests -------------------------------------------------------------------------------
+
     /**
      *	@void
      *
@@ -195,7 +206,7 @@ class DB
      */
     public function query($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
     {
-        $query = trim(str_replace("\r", " ", $query));
+        $query = trim(str_replace("\r", ' ', $query));
 
         if(!$this->Init($query, $params))
             return false;
