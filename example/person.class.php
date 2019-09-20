@@ -1,0 +1,11 @@
+<?php
+use Jgauthi\Component\Database\AbstractCrud;
+
+class Person Extends AbstractCrud
+{
+	# Your Table name
+	protected $table = 'persons';
+
+	# Primary Key of the Table
+	protected $pk	 = 'id';
+}

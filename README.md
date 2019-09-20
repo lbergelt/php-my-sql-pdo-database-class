@@ -16,7 +16,9 @@ dbname = yourdatabase
 #### 2. Require the class in your project
 ```php
 <?php
-require('db.class.php');
+use Jgauthi\Component\Database\Db;
+
+require('vendor/autoload.php');
 ```
 #### 3. Create the instance
 ```php
@@ -206,13 +208,13 @@ Actually it's just a little ORM class.
 
 ## How to use easyCRUD
 #### 1. First, create a new class. Then require the easyCRUD class.
-#### 2. Extend your class to the base class Crud and add the following fields to the class.
+#### 2. Extend your class to the base class AbstractCrud and add the following fields to the class.
 #### Example class :
 ```php
 <?php
-require_once('easycrud.class.php');
+use Jgauthi\Component\Database\AbstractCrud;
 
-class YourClass Extends Crud
+class YourClass Extends AbstractCrud
 {
   # The table you want to perform the database actions on
   const TABLE = 'persons';
@@ -228,6 +230,8 @@ class YourClass Extends Crud
 #### Creating a new person
 ```php
 <?php
+use Jgauthi\Component\Database\Db;
+
 // First we"ll have create the instance of the class
 $db = new db($host, $user, $pass, $dbname);
 $person = new person($db);
@@ -307,7 +311,7 @@ $persons = $person->all(['lastname' => 'ASC', 'firstname' => 'ASC'], false);
 ### Check fields
 ```php
 <?php
-class Person Extends Crud
+class Person Extends AbstractCrud
 {
   const TABLE = 'persons';
   const PK = 'Id';

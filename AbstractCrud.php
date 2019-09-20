@@ -4,11 +4,12 @@
 *
 * @author		Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
 * @contrib 		jgauthi (https://github.com/jgauthi/)
-* @version      0.8
+* @version      0.8.2
 */
-require_once(__DIR__ . '/../db.class.php');
 
-abstract class Crud
+namespace Jgauthi\Component\Database;
+
+abstract class AbstractCrud
 {
 	protected $db;
 	public $variables = array();
@@ -292,5 +293,3 @@ abstract class Crud
 		return !empty($already_exist);
 	}
 }
-
-?>
