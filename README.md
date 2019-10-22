@@ -24,11 +24,11 @@ require('vendor/autoload.php');
 ```php
 <?php
 // The instance
-$db = new db($host, $user, $pass, $dbname, $debug = false);
+$db = new db($host, $user, $pass, $dbname, $port = 3306);
 ```
-#### 4.  Display error
-The original log class was removed and replace by php classic function: [trigger_error](http://www.php.net/manual/en/function.trigger-error.php). With this use, the error are log in the error_log system. On `$db = new db`, set $debug to true to display query request on error.
 
+#### 4.  Display error
+The original log class was removed and replace by php classic function: [trigger_error](http://www.php.net/manual/en/function.trigger-error.php). With this use, the error are log in the error_log system. You can active debug with `$db->setDebug(true);`, to display query request on error.
 
 ## Examples
 Below some examples of the basic functions of the database class. I've included a SQL dump so you can easily test the database

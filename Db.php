@@ -5,7 +5,7 @@
  * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @contrib     jgauthi (https://github.com/jgauthi/)
  * @git 		https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
- * @version     0.8
+ * @version     0.9
  *
  */
 
@@ -28,7 +28,7 @@ class Db
     private $bConnected = false;
 
     # @object, Object for logging exceptions
-    private $debug;
+    private $debug = false;
 
     # @array, The parameters of the SQL query
     private $parameters;
@@ -41,17 +41,15 @@ class Db
      *	2. Connect to database.
      *	3. Creates the parameter array.
      */
-    public function __construct($host, $user, $pass, $dbname, $debug = false)
+    public function __construct($host, $user, $pass, $dbname, $port = 3306)
     {
-        // Display mysql query on error
-        $this->debug = $debug;
-
         $this->settings = array
         (
             'host'      =>  $host,
             'user'      =>  $user,
             'password'  =>  $pass,
             'dbname'    =>  $dbname,
+			'port'		=>	$port,
         );
 
         $this->Connect();
@@ -69,11 +67,11 @@ class Db
      */
     private function Connect()
     {
-        //$this->settings = parse_ini_file("settings.ini.php");
-        $dsn            = 'mysql:dbname=' . $this->settings['dbname'] . ';host=' . $this->settings['host'] . '';
+        $dsn = "mysql:dbname={$this->settings['dbname']};host={$this->settings['host']};port={$this->settings['port']}";
+
         try {
             # Read settings from INI file, set UTF8
-            $this->pdo = new PDO($dsn, $this->settings['user'], $this->settings["password"], array(
+            $this->pdo = new PDO($dsn, $this->settings['user'], $this->settings['password'], array(
                 PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
             ));
 
@@ -162,13 +160,21 @@ class Db
         return true;
     }
 
-    /*
+    /**
      * Return PDO var: to use with other library
      */
     public function getPdoVar()
     {
         return $this->pdo;
     }
+
+	/**
+	 * @param bool $debug
+	 */
+    public function setDebug($debug = true)
+	{
+		$this->debug = $debug;
+	}
 
 
     //-- Mysql Requests -------------------------------------------------------------------------------
