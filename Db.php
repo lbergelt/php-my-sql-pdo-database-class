@@ -6,7 +6,7 @@
  * @contrib     jgauthi (https://github.com/jgauthi)
  * @git 		https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
  *
- * @version     0.9
+ * @version     1.0
  */
 
 namespace Jgauthi\Component\Database;
@@ -34,13 +34,14 @@ class Db
     private $parameters;
     public $table = [];
 
-    /**
-     *   Default Constructor.
-     *
-     *	1. Instantiate Log class.
-     *	2. Connect to database.
-     *	3. Creates the parameter array.
-     */
+	/**
+	 * Db constructor.
+	 * @param string $host
+	 * @param string $user
+	 * @param string $pass
+	 * @param string $dbname
+	 * @param int $port
+	 */
     public function __construct($host, $user, $pass, $dbname, $port = 3306)
     {
         $this->settings = [
@@ -48,7 +49,7 @@ class Db
             'user' 		=> $user,
             'password' 	=> $pass,
             'dbname' 	=> $dbname,
-            'port' 		=> $port,
+            'port' 		=> intval($port),
         ];
 
         $this->Connect();
@@ -56,14 +57,17 @@ class Db
         $this->table['variable'] = 'variable';
     }
 
-    /**
-     *	This method makes connection to the database.
-     *
-     *	1. Reads the database settings from a ini file.
-     *	2. Puts  the ini content into the settings array.
-     *	3. Tries to connect to the database.
-     *	4. If connection failed, exception is displayed and a log file gets created.
-     */
+
+	/**
+	 *  This method makes connection to the database.
+	 *
+	 *	1. Reads the database settings from a ini file.
+	 *	2. Puts  the ini content into the settings array.
+	 *	3. Tries to connect to the database.
+	 *	4. If connection failed, exception is displayed and a log file gets created.
+	 *
+	 * @return bool
+	 */
     private function Connect()
     {
         $dsn = "mysql:dbname={$this->settings['dbname']};host={$this->settings['host']};port={$this->settings['port']}";
@@ -82,9 +86,12 @@ class Db
 
             // Connection succeeded, set the boolean to true.
             $this->bConnected = true;
+
         } catch (PDOException $e) {
             trigger_error("[Mysql error] {$e->getMessage()}");
         }
+
+        return $this->bConnected;
     }
 
     /*
@@ -98,17 +105,21 @@ class Db
         $this->pdo = null;
     }
 
-    /**
-     *	Every method which needs to execute a SQL query uses this method.
-     *
-     *	1. If not connected, connect to the database.
-     *	2. Prepare Query.
-     *	3. Parameterize Query.
-     *	4. Execute Query.
-     *	5. On exception : Write Exception into the log + SQL query.
-     *	6. Reset the Parameters.
-     */
-    private function Init($query, $parameters = '')
+	/**
+	 * Every method which needs to execute a SQL query uses this method.
+	 *
+	 *	1. If not connected, connect to the database.
+	 *	2. Prepare Query.
+	 *	3. Parameterize Query.
+	 *	4. Execute Query.
+	 *	5. On exception : Write Exception into the log + SQL query.
+	 *	6. Reset the Parameters.
+	 *
+	 * @param string $query
+	 * @param array $parameters
+	 * @return bool
+	 */
+    private function Init($query, $parameters = [])
     {
         // Connect to database
         if (!$this->bConnected) {
@@ -140,6 +151,7 @@ class Db
 
             // Execute SQL
             $this->sQuery->execute();
+
         } catch (PDOException $e) {
             $msg = '[Mysql error] '.$e->getMessage();
             if ($this->debug) {
@@ -147,6 +159,7 @@ class Db
             }
 
             return !trigger_error($msg);
+
         } finally {
             // Reset the parameters
             $this->parameters = [];
@@ -157,6 +170,7 @@ class Db
 
     /**
      * Return PDO var: to use with other library.
+	 * @return PDO
      */
     public function getPdoVar()
     {
@@ -168,30 +182,29 @@ class Db
      */
     public function setDebug($debug = true)
     {
-        $this->debug = $debug;
+        $this->debug = boolval($debug);
     }
 
     //-- Mysql Requests -------------------------------------------------------------------------------
 
     /**
-     *	@void
+     * Add the parameter to the parameter array
      *
-     *	Add the parameter to the parameter array
-     *
-     *	@param string $para
-     *	@param string $value
+     * @param string $para
+     * @param string $value
+	 * @return self
      */
     public function bind($para, $value)
     {
         $this->parameters[sizeof($this->parameters)] = [':'.$para, $value];
+        return $this;
     }
 
     /**
-     *	@void
+     * Add more parameters to the parameter array
      *
-     *	Add more parameters to the parameter array
-     *
-     *	@param array $parray
+     * @param array $parray
+	 * @return self
      */
     public function bindMore($parray)
     {
@@ -201,17 +214,19 @@ class Db
                 $this->bind($column, $parray[$column]);
             }
         }
+
+        return $this;
     }
 
     /**
      *  If the SQL query  contains a SELECT or SHOW statement it returns an array containing all of the result set row
      *	If the SQL statement is a DELETE, INSERT, or UPDATE statement it returns the number of affected rows.
      *
-     *  @param  string $query
-     *	@param  array  $params
-     *	@param  int    $fetchmode
+     * @param  string $query
+     * @param  array  $params
+     * @param  int    $fetchmode
      *
-     *	@return mixed
+     * @return int|array|null
      */
     public function query($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
     {
@@ -226,9 +241,9 @@ class Db
         // Which SQL statement is used
         $statement = strtolower($rawStatement[0]);
 
-        if ('select' === $statement || 'show' === $statement) {
+        if (in_array($statement, ['select', 'show'])) {
             return $this->sQuery->fetchAll($fetchmode);
-        } elseif ('insert' === $statement || 'replace' === $statement || 'update' === $statement || 'delete' === $statement) {
+        } elseif (in_array($statement, ['insert', 'replace', 'update', 'delete'])) {
             return $this->sQuery->rowCount();
         } else {
             return null;
@@ -236,9 +251,9 @@ class Db
     }
 
     /**
-     *  Returns the last inserted id.
+     * Returns the last inserted id.
      *
-     *  @return string
+     * @return int
      */
     public function lastInsertId()
     {
@@ -276,9 +291,9 @@ class Db
     }
 
     /**
-     *  Execute Transaction.
+     * Execute Transaction.
      *
-     *  @return boolean, true on success or false on failure
+     * @return boolean, true on success or false on failure
      */
     public function executeTransaction()
     {
@@ -286,9 +301,9 @@ class Db
     }
 
     /**
-     *  Rollback of Transaction.
+     * Rollback of Transaction.
      *
-     *  @return boolean, true on success or false on failure
+     * @return boolean, true on success or false on failure
      */
     public function rollBack()
     {
@@ -296,12 +311,12 @@ class Db
     }
 
     /**
-     *	Returns an array which represents a column from the result set.
+     * Returns an array which represents a column from the result set.
      *
-     *	@param  string $query
-     *	@param  array  $params
+     * @param  string $query
+     * @param  array  $params
      *
-     *	@return array
+     * @return array
      */
     public function column($query, $params = null)
     {
@@ -318,13 +333,13 @@ class Db
     }
 
     /**
-     *	Returns an array which represents a row from the result set.
+     * Returns an array which represents a row from the result set.
      *
-     *	@param  string $query
-     *	@param  array  $params
-     *   	@param  int    $fetchmode
+     * @param  string $query
+     * @param  array  $params
+     * @param  int    $fetchmode
      *
-     *	@return array
+     * @return array
      */
     public function row($query, $params = null, $fetchmode = PDO::FETCH_ASSOC)
     {
@@ -335,12 +350,12 @@ class Db
     }
 
     /**
-     *	Returns the value of one single field/column.
+     * Returns the value of one single field/column.
      *
-     *	@param  string $query
-     *	@param  array  $params
+     * @param  string $query
+     * @param  array  $params
      *
-     *	@return string
+     * @return string
      */
     public function single($query, $params = null)
     {
@@ -361,6 +376,11 @@ class Db
 
         ALTER TABLE `variable` ADD PRIMARY KEY (`name`);
     */
+	/**
+	 * @param string $var_name
+	 * @param mixed|null $value_defaut
+	 * @return mixed|null
+	 */
     public function variable_get($var_name, $value_defaut = null)
     {
         $params = ['name' => $var_name];
@@ -378,10 +398,14 @@ class Db
         }
     }
 
+	/**
+	 * @param string $var_name
+	 * @param mixed $value
+	 * @return array|int|null
+	 */
     public function variable_save($var_name, $value)
     {
-        $params =
-        [
+        $params = [
             'name' => $var_name,
             'value' => $value,
             'serialize' => 0,
@@ -401,6 +425,10 @@ class Db
         return $this->query($sql, $params);
     }
 
+	/**
+	 * @param string $var_name
+	 * @return array|int|null
+	 */
     public function variable_delete($var_name)
     {
         return $this->query("DELETE FROM `{$this->table['variable']}` WHERE name = :name LIMIT 1", ['name' => $var_name]);

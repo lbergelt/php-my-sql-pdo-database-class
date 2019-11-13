@@ -5,7 +5,7 @@
 * @author		Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
 * @contrib 		jgauthi (https://github.com/jgauthi)
 *
-* @version      0.8.3
+* @version      0.8.4
 */
 
 namespace Jgauthi\Component\Database;
@@ -25,12 +25,21 @@ abstract class AbstractCrud
     public $list_fields_table = [];
     protected $required_fields = [];
 
+	/**
+	 * AbstractCrud constructor.
+	 * @param Db $db
+	 * @param array $data
+	 */
     public function __construct(Db &$db, $data = [])
     {
         $this->db = $db;
         $this->variables = $data;
     }
 
+	/**
+	 * @param string $name
+	 * @param mixed $value
+	 */
     public function __set($name, $value)
     {
         if ($name === static::PK) {
@@ -40,6 +49,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param string $name
+	 * @return mixed|null
+	 */
     public function __get($name)
     {
         if (isset($this->$name)) { // use magic method: __isset
@@ -49,6 +62,10 @@ abstract class AbstractCrud
         return null;
     }
 
+	/**
+	 * @param string $name
+	 * @return bool
+	 */
     public function __isset($name)
     {
         if (is_array($this->variables) && array_key_exists($name, $this->variables)) {
@@ -58,6 +75,9 @@ abstract class AbstractCrud
         return false;
     }
 
+	/**
+	 * @param string $name
+	 */
     public function __unset($name)
     {
         if (isset($this->$name)) { // use magic method: __isset
@@ -65,6 +85,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param int|string|null $id
+	 * @return array|int|null
+	 */
     public function save($id = null)
     {
         if (empty($this->variables[static::PK]) && !empty($id)) {
@@ -98,6 +122,9 @@ abstract class AbstractCrud
         return null;
     }
 
+	/**
+	 * @return array|int|null
+	 */
     public function create()
     {
         $bindings = $this->variables;
@@ -113,6 +140,10 @@ abstract class AbstractCrud
         return $this->exec($sql);
     }
 
+	/**
+	 * @param int|string|null $id
+	 * @return array|bool|int|null
+	 */
     public function delete($id = null)
     {
         $id = ((!empty($id)) ? $id : $this->variables[static::PK]);
@@ -129,6 +160,9 @@ abstract class AbstractCrud
         return $result;
     }
 
+	/**
+	 * @param int|string|null $id
+	 */
     public function find($id = null)
     {
         $id = ((!empty($id)) ? $id : $this->variables[static::PK]);
@@ -148,12 +182,13 @@ abstract class AbstractCrud
      * @param array $sort
      *
      * @return array of Collection.
-     *               Example: $user = new User;
-     *               $found_user_array = $user->search(array('sex' => 'Male', 'age' => '18'), array('dob' => 'DESC'));
-     *               // Will produce: SELECT * FROM ".static::TABLE." WHERE sex = :sex AND age = :age ORDER BY dob DESC;
-     *               // And rest is binding those params with the Query. Which will return an array.
-     *               // Now we can use for each on $found_user_array.
-     *               Other functionalities ex: Support for LIKE, >, <, >=, <= ... Are not yet supported.
+	 *
+     *  Example: $user = new User;
+     *  $found_user_array = $user->search(array('sex' => 'Male', 'age' => '18'), array('dob' => 'DESC'));
+     *  // Will produce: SELECT * FROM ".static::TABLE." WHERE sex = :sex AND age = :age ORDER BY dob DESC;
+     *  // And rest is binding those params with the Query. Which will return an array.
+     *  // Now we can use for each on $found_user_array.
+     *  Other functionalities ex: Support for LIKE, >, <, >=, <= ... Are not yet supported.
      */
     public function search($fields = [], $sort = [], $limit = 0)
     {
@@ -186,6 +221,11 @@ abstract class AbstractCrud
         return $this->exec($sql, $bindings);
     }
 
+	/**
+	 * @param array $sort
+	 * @param bool $array_keys_primary_key
+	 * @return array|int|null
+	 */
     public function all($sort = [], $array_keys_primary_key = false)
     {
         $select = '*';
@@ -210,6 +250,10 @@ abstract class AbstractCrud
         return $this->db->query($sql, $args, $fetchmode);
     }
 
+	/**
+	 * @param string $field
+	 * @return string
+	 */
     public function min($field)
     {
         if ($field) {
@@ -217,6 +261,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param string $field
+	 * @return string
+	 */
     public function max($field)
     {
         if ($field) {
@@ -224,6 +272,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param string $field
+	 * @return string
+	 */
     public function avg($field)
     {
         if ($field) {
@@ -231,6 +283,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param string $field
+	 * @return string
+	 */
     public function sum($field)
     {
         if ($field) {
@@ -238,6 +294,10 @@ abstract class AbstractCrud
         }
     }
 
+	/**
+	 * @param string $field
+	 * @return string
+	 */
     public function count($field)
     {
         if ($field) {
@@ -245,11 +305,16 @@ abstract class AbstractCrud
         }
     }
 
-    private function exec($sql, $array = null)
+	/**
+	 * @param string $sql
+	 * @param array|null $params
+	 * @return array|int|null
+	 */
+    private function exec($sql, $params = null)
     {
-        if (null !== $array) {
+        if (null !== $params) {
             // Get result with the DB object
-            $result = $this->db->query($sql, $array);
+            $result = $this->db->query($sql, $params);
         } else {
             // Get result with the DB object
             $result = $this->db->query($sql, $this->variables);
@@ -261,8 +326,11 @@ abstract class AbstractCrud
         return $result;
     }
 
-    // Check fields before init object (optional)
-    public function check_fields()
+	/**
+	 * Check fields before init object (optional)
+	 * @return bool
+	 */
+	public function check_fields()
     {
         // Prerequisites
         if (empty($this->variables)) {
@@ -299,8 +367,11 @@ abstract class AbstractCrud
         return true;
     }
 
-    // Vérifier qu'un dossier avec le même code n'existe pas déjà
-    public function exists()
+	/**
+	 * Vérifier qu'un dossier avec le même code n'existe pas déjà
+	 * @return bool
+	 */
+	public function exists()
     {
         if (empty($this->variables[static::PK])) {
             return false;
