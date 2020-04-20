@@ -6,12 +6,13 @@
     "homepage": "https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class",
     "license": "Beerware",
     "authors": [
-        { "name": "wicky", "email": "info@wickyaswal.com" },
-        { "name": "jgauthi", "url": "https://github.com/jgauthi" }
+		{ "name": "wicky", "email": "info@wickyaswal.com" },
+		{ "name": "jgauthi", "url": "https://github.com/jgauthi" }
     ],
     "require": {
-         "php": ">=5.6.0"
-    },
+		"php": ">=5.6.0",
+		"ext-pdo": "*"
+	},
 	"autoload": {
 		"psr-4": { "Jgauthi\\Component\\Database\\": "" }
 	}

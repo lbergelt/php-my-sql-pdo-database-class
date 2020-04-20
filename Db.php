@@ -71,7 +71,6 @@ class Db
     private function Connect()
     {
         $dsn = "mysql:dbname={$this->settings['dbname']};host={$this->settings['host']};port={$this->settings['port']}";
-
         try {
             // Read settings from INI file, set UTF8
             $this->pdo = new PDO($dsn, $this->settings['user'], $this->settings['password'], [
