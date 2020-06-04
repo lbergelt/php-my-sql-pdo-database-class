@@ -5,7 +5,7 @@
 * @author		Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
 * @contrib 		jgauthi (https://github.com/jgauthi)
 *
-* @version      0.8.4
+* @version      1.1
 */
 
 namespace Jgauthi\Component\Database;

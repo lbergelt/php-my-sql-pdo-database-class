@@ -1,9 +1,7 @@
 <?php
-
 use Jgauthi\Component\Database\Db;
 
-require __DIR__.'/../Db.class.php';
-// require('vendor/autoload.php'); // Or load the composer autoload
+require_once 'vendor/autoload.php';
 
 // Creates the instance
 $db = new Db();
@@ -12,13 +10,13 @@ $db = new Db();
 
 // 1. Read friendly method
 $db->bind('firstname', 'John');
-$db->bind('age', '19');
+$db->bind('age', 19);
 
 // 2. Bind more parameters
-$db->bindMore(['firstname' => 'John', 'age' => '19']);
+$db->bindMore(['firstname' => 'John', 'age' => 19]);
 
 // 3. Or just give the parameters to the method
-$db->query('SELECT * FROM Persons WHERE firstname = :firstname AND age = :age', ['firstname' => 'John', 'age' => '19']);
+$db->query('SELECT * FROM Persons WHERE firstname = :firstname AND age = :age', ['firstname' => 'John', 'age' => 19]);
 
 //  Fetching data
 $person = $db->query('SELECT * FROM Persons');
@@ -27,7 +25,7 @@ $person = $db->query('SELECT * FROM Persons');
 $persons_num = $db->query('SELECT * FROM Persons', null, PDO::FETCH_NUM);
 
 // Fetching single value
-$firstname = $db->single('SELECT firstname FROM Persons WHERE Id = :id ', ['id' => '3']);
+$firstname = $db->single('SELECT firstname FROM Persons WHERE Id = :id ', ['id' => 3]);
 
 // Single Row
 $id_age = $db->row('SELECT Id, Age FROM Persons WHERE firstname = :f', ['f' => 'Zoe']);
@@ -41,7 +39,7 @@ $ages = $db->column('SELECT age FROM Persons');
 // The following statements will return the affected rows
 
 // Update statement
-$update = $db->query('UPDATE Persons SET firstname = :f WHERE Id = :id', ['f' => 'Johny', 'id' => '1']);
+$update = $db->query('UPDATE Persons SET firstname = :f WHERE Id = :id', ['f' => 'Johny', 'id' => 1]);
 
 // Insert statement
 //	$insert	 	 =  $db->query("INSERT INTO Persons(Firstname,Age) 	VALUES(:f,:age)",array("f"=>"Vivek","age"=>"20"));
@@ -49,11 +47,11 @@ $update = $db->query('UPDATE Persons SET firstname = :f WHERE Id = :id', ['f' =>
 // Delete statement
 //	$delete	 	 =  $db->query("DELETE FROM Persons WHERE Id = :id",array("id"=>"6"));
 
-function d($v, $t = '')
+function d($value, $title = '')
 {
     echo '<pre>';
-    echo '<h1>'.$t.'</h1>';
-    var_dump($v);
+    echo '<h1>'.$title.'</h1>';
+    var_dump($value);
     echo '</pre>';
 }
 //d($person, "All persons");

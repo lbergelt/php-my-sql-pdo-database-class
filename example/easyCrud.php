@@ -1,8 +1,5 @@
 <?php
-
-// require('vendor/autoload.php'); // Or load the composer autoload
-require __DIR__.'/../Db.php';
-require __DIR__.'/../AbstractCrud.php';
+require_once 'vendor/autoload.php';
 
 // Require the person class file
 require __DIR__.'/person.class.php';
@@ -12,13 +9,13 @@ $person = new Person();
 
 // Create new person
 $person->Firstname = 'Kona';
-$person->Age = '20';
+$person->Age = 20;
 $person->Sex = 'F';
 $creation = $person->Create();
 
 // Update Person Info
-$person->id = '4';
-$person->Age = '32';
+$person->id = 4;
+$person->Age = 32;
 $saved = $person->Save();
 
 // Find person
@@ -29,7 +26,7 @@ d($person->Firstname, 'Person->Firstname');
 d($person->Age, 'Person->Age');
 
 // Delete person
-$person->id = '17';
+$person->id = 17;
 $delete = $person->Delete();
 
 // Get all persons
@@ -42,10 +39,10 @@ d($person->sum('age'), 'Sum persons age');
 d($person->avg('age'), 'Average persons age');
 d($person->count('id'), 'Count persons');
 
-function d($v, $t = '')
+function d($value, $title = '')
 {
     echo '<pre>';
-    echo '<h1>'.$t.'</h1>';
-    var_dump($v);
+    echo '<h1>'.$title.'</h1>';
+    var_dump($value);
     echo '</pre>';
 }

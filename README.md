@@ -4,7 +4,7 @@ PDO Database Class
 A database class for PHP-MySQL which uses the PDO extension.
 
 ## To use the class
-### 1. Install the library
+### 1. Install the library (PHP5.6 version)
 Edit your [composer.json](https://getcomposer.org) (launch `composer update` after edit):
 ```json
 {
@@ -12,10 +12,12 @@ Edit your [composer.json](https://getcomposer.org) (launch `composer update` aft
 		{ "type": "git", "url": "git@github.com:jgauthi/indieteq-php-my-sql-pdo-database-class.git" }
 	],
 	"require": {
-		"jgauthi/indieteq-php-my-sql-pdo-database-class": "dev-master"
+		"jgauthi/indieteq-php-my-sql-pdo-database-class": "1.*"
 	}
 }
 ```
+
+The PHP 7 version is available, [read more](https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class).
 
 
 ### 2. Require the class in your project
@@ -266,7 +268,7 @@ $created = $person->Create();
 ```php
 <?php
 // Delete person
-$person->Id  = "17";
+$person->Id  = '17';
 $deleted     = $person->Delete();
 
 // Shorthand method, give id as parameter
@@ -327,7 +329,7 @@ class Person Extends AbstractCrud
   const TABLE = 'persons';
   const PK = 'Id';
 
-	public function __construct(&$db)
+	public function __construct(Db &$db)
 	{
 		parent::__construct($db);
 
@@ -370,7 +372,6 @@ $person->Id = 6;
 if($person->exist())
 	 echo 'The person with ID: "6" exist';
 else echo 'The person with ID: "6" don\'t exist';
-
 ```
 
 ### Use table name / primary key outside the entity

@@ -1,12 +1,12 @@
 <?php
 /**
- *  DB - A simple database class.
+ *  DB - A simple database class (PHP 5.6 version)
  *
  * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @contrib     jgauthi (https://github.com/jgauthi)
  * @git 		https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
  *
- * @version     1.0
+ * @version     2.0
  */
 
 namespace Jgauthi\Component\Database;
@@ -364,14 +364,14 @@ class Db
         return $result;
     }
 
-    //-- Gestionnaire de variable stocké en base pour projet custom -----------------------------------------
+    //-- Variable manager stored in base for custom project -------------------------------------------
     /*
         CREATE TABLE IF NOT EXISTS `variable` (
           `name` varchar(100) NOT NULL,
           `value` text,
           `serialize` tinyint(1) unsigned NOT NULL DEFAULT '0',
           `dateUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Diverses variables et options pour l''application';
+        ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Various variables and options for the application';
 
         ALTER TABLE `variable` ADD PRIMARY KEY (`name`);
     */

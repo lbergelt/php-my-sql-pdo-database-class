@@ -1,5 +1,4 @@
 <?php
-
 use Jgauthi\Component\Database\AbstractCrud;
 
 class Person extends AbstractCrud
