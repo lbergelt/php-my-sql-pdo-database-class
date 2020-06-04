@@ -142,6 +142,10 @@ class Db
                         $type = PDO::PARAM_NULL;
                     } else {
                         $type = PDO::PARAM_STR;
+
+                        if ($value[1] instanceof \DateTimeInterface) {
+                            $value[1] = $value[1]->format('Y-m-d H:i:s');
+                        }
                     }
                     // Add type when binding the values to the column
                     $this->sQuery->bindValue($value[0], $value[1], $type);

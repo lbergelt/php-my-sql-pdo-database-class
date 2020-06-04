@@ -70,7 +70,7 @@ $person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND 
 
 // 2. Bind more parameters
 $db->bindMore(['firstname' => 'John', 'id' => '1']);
-$person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND id = :id"));
+$person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND id = :id");
 
 // 3. Or just give the parameters to the method
 $person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND id = :id", ['firstname' => 'John', 'id' => '1']);
@@ -135,19 +135,22 @@ When executing the delete, update, or insert statement by using the query method
 ```php
 <?php
 // Delete
-$delete   =  $db->query("DELETE FROM Persons WHERE Id = :id", ['id' => '1']);
+$delete   =  $db->query("DELETE FROM Persons WHERE Id = :id", ['id' => 1]);
 
 // Update
-$update   =  $db->query("UPDATE Persons SET firstname = :f WHERE Id = :id", ['f' => 'Jan', 'id' => '32']);
+$update   =  $db->query("UPDATE Persons SET firstname = :f WHERE Id = :id", ['id' => 32, 'f' => 'Jan', 'last_update' => new DateTime]);
 
 // Insert
-$insert   =  $db->query("INSERT INTO Persons(Firstname,Age) VALUES(:f,:age)", ['f' => 'Vivek', 'age' => '20']);
+$insert   =  $db->query("INSERT INTO Persons(Firstname,Age) VALUES(:f,:age)", ['f' => 'Vivek', 'age' => 20]);
 
 // Do something with the data
 if($insert > 0 ) {
   return 'Succesfully created a new person !';
 }
 ```
+
+Note: On mysql request, the [datetime](https://www.php.net/manual/en/book.datetime.php) classes is supported for mysql fields: _VARCHAR, TEXT, DATE, DATETIME, etc_.
+
 
 ## Method parameters
 Every method which executes a query has the optional parameter called bindings.

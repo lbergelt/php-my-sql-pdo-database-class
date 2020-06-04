@@ -25,6 +25,7 @@ CREATE TABLE `persons` (
   `Lastname` varchar(32) DEFAULT NULL,
   `Sex` char(1) DEFAULT NULL,
   `Age` tinyint(3) DEFAULT NULL,
+  `last_update` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`Id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 

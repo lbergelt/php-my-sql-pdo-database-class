@@ -8,4 +8,17 @@ class Person extends AbstractCrud
 
     // Primary Key of the Table
     protected $pk = 'id';
+
+    public function create()
+    {
+        $this->variables['last_update'] = null;
+        return parent::create();
+    }
+
+    public function save($id = null)
+    {
+        // Save Date Update
+        $this->variables['last_update'] = new DateTime;
+        return parent::save($id);
+    }
 }
