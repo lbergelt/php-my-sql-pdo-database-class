@@ -8,33 +8,30 @@ A database class for PHP-MySQL which uses the PDO extension.
 Edit your [composer.json](https://getcomposer.org) (launch `composer update` after edit):
 ```json
 {
-	"repositories": [
-		{ "type": "git", "url": "git@github.com:jgauthi/indieteq-php-my-sql-pdo-database-class.git" }
-	],
-	"require": {
-		"jgauthi/indieteq-php-my-sql-pdo-database-class": "1.*"
-	}
+  "repositories": [
+    { "type": "git", "url": "git@github.com:jgauthi/indieteq-php-my-sql-pdo-database-class.git" }
+  ],
+  "require": {
+    "jgauthi/indieteq-php-my-sql-pdo-database-class": "1.*"
+  }
 }
 ```
 
 The PHP 7 version is available, [read more](https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class).
 
 
-### 2. Require the class in your project
+### 2. Require the class in your project and create the instance
 ```php
 <?php
 use Jgauthi\Component\Database\Db;
 
 require('vendor/autoload.php');
-```
-### 3. Create the instance
-```php
-<?php
+
 // The instance
-$db = new db($host, $user, $pass, $dbname, $port = 3306);
+$db = new db($dbhost, $dbuser, $dbpass, $dbname, $dbport = 3306);
 ```
 
-### 4.  Display error
+### 3.  Display error
 The original log class was removed and replace by php classic function: [trigger_error](http://www.php.net/manual/en/function.trigger-error.php). With this use, the error are log in the error_log system. You can active debug with `$db->setDebug(true);`, to display query request on error.
 
 ## Examples
@@ -64,7 +61,7 @@ There are three different ways to bind parameters.
 ```php
 <?php
 // 1. Read friendly method
-$db->bind('id', '1');
+$db->bind('id', 1);
 $db->bind('firstname', 'John');
 $person   =  $db->query("SELECT * FROM Persons WHERE firstname = :firstname AND id = :id");
 
@@ -251,7 +248,7 @@ class YourClass Extends AbstractCrud
 use Jgauthi\Component\Database\Db;
 
 // First we"ll have create the instance of the class
-$db = new db($host, $user, $pass, $dbname);
+$db = new db($dbhost, $dbuser, $dbpass, $dbname, $dbport = 3306);
 $person = new person($db);
 
 // Create new person
@@ -271,7 +268,7 @@ $created = $person->Create();
 ```php
 <?php
 // Delete person
-$person->Id  = '17';
+$person->Id  = 17;
 $deleted     = $person->Delete();
 
 // Shorthand method, give id as parameter
@@ -292,7 +289,7 @@ $person->Id   = 4;
 $saved = $person->save();
 
 //  Or give the bindings to the constructor
-$person = new person(['Firstname' => 'John', 'age' => '20', 'sex' => 'F', 'Id' => '4']);
+$person = new person($db, ['Firstname' => 'John', 'age' => '20', 'sex' => 'F', 'Id' => '4']);
 $saved = $person->save();
 
 // SQL Equivalent: "UPDATE persons SET Firstname = 'John',Age = 20, Sex = 'F' WHERE Id= 4"
@@ -350,7 +347,7 @@ class Person Extends AbstractCrud
 }
 
 // First we"ll have create the instance of the class
-$db = new db($host, $user, $pass, $dbname);
+$db = new db($dbhost, $dbuser, $dbpass, $dbname);
 $person = new person($db);
 
 // Create new person

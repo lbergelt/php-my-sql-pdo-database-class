@@ -2,11 +2,11 @@
 /**
  *  DB - A simple database class (PHP 5.6 version)
  *
- * @author		Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
+ * @author      Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @contrib     jgauthi (https://github.com/jgauthi)
- * @git 		https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
+ * @git         https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
  *
- * @version     2.0
+ * @version     1.2
  */
 
 namespace Jgauthi\Component\Database;
@@ -34,14 +34,14 @@ class Db
     private $parameters;
     public $table = [];
 
-	/**
-	 * Db constructor.
-	 * @param string $host
-	 * @param string $user
-	 * @param string $pass
-	 * @param string $dbname
-	 * @param int $port
-	 */
+    /**
+     * Db constructor.
+     * @param string $host
+     * @param string $user
+     * @param string $pass
+     * @param string $dbname
+     * @param int $port
+     */
     public function __construct($host, $user, $pass, $dbname, $port = 3306)
     {
         $this->settings = [
@@ -58,16 +58,16 @@ class Db
     }
 
 
-	/**
-	 *  This method makes connection to the database.
-	 *
-	 *	1. Reads the database settings from a ini file.
-	 *	2. Puts  the ini content into the settings array.
-	 *	3. Tries to connect to the database.
-	 *	4. If connection failed, exception is displayed and a log file gets created.
-	 *
-	 * @return bool
-	 */
+    /**
+     *  This method makes connection to the database.
+     *
+     *	1. Reads the database settings from a ini file.
+     *	2. Puts  the ini content into the settings array.
+     *	3. Tries to connect to the database.
+     *	4. If connection failed, exception is displayed and a log file gets created.
+     *
+     * @return bool
+     */
     private function Connect()
     {
         $dsn = "mysql:dbname={$this->settings['dbname']};host={$this->settings['host']};port={$this->settings['port']}";
@@ -104,20 +104,20 @@ class Db
         $this->pdo = null;
     }
 
-	/**
-	 * Every method which needs to execute a SQL query uses this method.
-	 *
-	 *	1. If not connected, connect to the database.
-	 *	2. Prepare Query.
-	 *	3. Parameterize Query.
-	 *	4. Execute Query.
-	 *	5. On exception : Write Exception into the log + SQL query.
-	 *	6. Reset the Parameters.
-	 *
-	 * @param string $query
-	 * @param array $parameters
-	 * @return bool
-	 */
+    /**
+     * Every method which needs to execute a SQL query uses this method.
+     *
+     *	1. If not connected, connect to the database.
+     *	2. Prepare Query.
+     *	3. Parameterize Query.
+     *	4. Execute Query.
+     *	5. On exception : Write Exception into the log + SQL query.
+     *	6. Reset the Parameters.
+     *
+     * @param string $query
+     * @param array $parameters
+     * @return bool
+     */
     private function Init($query, $parameters = [])
     {
         // Connect to database
@@ -173,7 +173,7 @@ class Db
 
     /**
      * Return PDO var: to use with other library.
-	 * @return PDO
+     * @return PDO
      */
     public function getPdoVar()
     {
@@ -195,7 +195,7 @@ class Db
      *
      * @param string $para
      * @param string $value
-	 * @return self
+     * @return self
      */
     public function bind($para, $value)
     {
@@ -207,7 +207,7 @@ class Db
      * Add more parameters to the parameter array
      *
      * @param array $parray
-	 * @return self
+     * @return self
      */
     public function bindMore($parray)
     {
@@ -379,11 +379,11 @@ class Db
 
         ALTER TABLE `variable` ADD PRIMARY KEY (`name`);
     */
-	/**
-	 * @param string $var_name
-	 * @param mixed|null $value_defaut
-	 * @return mixed|null
-	 */
+    /**
+     * @param string $var_name
+     * @param mixed|null $value_defaut
+     * @return mixed|null
+     */
     public function variable_get($var_name, $value_defaut = null)
     {
         $params = ['name' => $var_name];
@@ -401,11 +401,11 @@ class Db
         }
     }
 
-	/**
-	 * @param string $var_name
-	 * @param mixed $value
-	 * @return array|int|null
-	 */
+    /**
+     * @param string $var_name
+     * @param mixed $value
+     * @return array|int|null
+     */
     public function variable_save($var_name, $value)
     {
         $params = [
@@ -428,10 +428,10 @@ class Db
         return $this->query($sql, $params);
     }
 
-	/**
-	 * @param string $var_name
-	 * @return array|int|null
-	 */
+    /**
+     * @param string $var_name
+     * @return array|int|null
+     */
     public function variable_delete($var_name)
     {
         return $this->query("DELETE FROM `{$this->table['variable']}` WHERE name = :name LIMIT 1", ['name' => $var_name]);
