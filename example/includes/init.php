@@ -5,14 +5,14 @@ use Jgauthi\Component\Database\Db;
 require_once __DIR__.'/../vendor/autoload.php';
 
 //-- Configuration (edit here) ------------------------
-$dbhost = ((isset($dbhost)) ? $dbhost : 'localhost');
-$dbuser = ((isset($dbuser)) ? $dbuser : 'root');
-$dbpass = ((isset($dbpass)) ? $dbpass : 'root');
-$dbname = ((isset($dbname)) ? $dbname : 'dbname');
-$dbport = ((isset($dbport)) ? $dbport : 3306);
+$dbhost ??= 'localhost';
+$dbuser ??= 'root';
+$dbpass ??= 'root';
+$dbname ??= 'dbname';
+$dbport ??= 3306;
 //-----------------------------------------------------
 
-function d($value, $title = '')
+function d(string $value, string $title = ''): void
 {
     echo '<h3>'.$title.'</h3>';
     var_dump($value);
