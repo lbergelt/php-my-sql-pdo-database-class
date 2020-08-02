@@ -6,11 +6,12 @@
  * @contrib     jgauthi (https://github.com/jgauthi)
  * @git         https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class
  *
- * @version     2.1
+ * @version     2.2
  */
 
 namespace Jgauthi\Component\Database;
 
+use InvalidArgumentException;
 use PDO;
 use PDOException;
 use PDOStatement;
@@ -43,6 +44,43 @@ class Db
 
         $class = __CLASS__;
         $db = new $class($pdo);
+
+        return $db;
+    }
+
+    /**
+     * Ini file, require values:
+        host=localhost
+        user=root
+        password=password
+        dbname=database
+        port=3306 (optional)
+
+     * @throws PDOException
+     */
+    static public function initByIni(string $inifile): self
+    {
+        if (!is_readable($inifile)) {
+            throw new InvalidArgumentException("The ini file {$inifile} doesn't exists or not readable.");
+        }
+
+        $ini = parse_ini_file($inifile);
+        $valuesNoExist = [];
+        foreach (['host', 'user', 'password', 'dbname'] as $valueRequired) {
+            if (!isset($ini[$valueRequired])) {
+                $valuesNoExist[] = $valueRequired;
+            }
+        }
+
+        if (!empty($valuesNoExist)) {
+            throw new InvalidArgumentException(
+                "Fields missing on ini file {$inifile}, please complete: ".
+                implode(', ', $valuesNoExist)
+            );
+        }
+
+        $class = __CLASS__;
+        $db = $class::init($ini['host'], $ini['user'], $ini['password'], $ini['dbname'], $ini['port'] ?? 3306);
 
         return $db;
     }
