@@ -1,6 +1,6 @@
 <?php
 /**
- *  DB - A simple database class (PHP 5.6 version)
+ *  DB - A simple database class (PHP 7.4 version)
  *
  * @author      Author: Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @contrib     jgauthi (https://github.com/jgauthi)
@@ -19,65 +19,35 @@ class Db
 {
     private ?PDO $pdo;
     private PDOStatement $sQuery;
-    private array $settings;
-    private bool $bConnected = false;
     private bool $debug = false;
-    private array $parameters;
-    public array $table = [];
+    private array $parameters = [];
+    public array $table = ['variable' => 'variable'];
 
-    public function __construct(string $host, string $user, string $pass, string $dbname, int $port = 3306)
+    public function __construct(PDO $pdo)
     {
-        $this->settings = [
-            'host' 		=> $host,
-            'user' 		=> $user,
-            'password' 	=> $pass,
-            'dbname' 	=> $dbname,
-            'port' 		=> $port,
-        ];
-
-        $this->Connect();
-        $this->parameters = [];
-        $this->table['variable'] = 'variable';
+        $this->pdo = $pdo;
     }
-
 
     /**
-     *  This method makes connection to the database.
-     *
-     *	1. Reads the database settings from a ini file.
-     *	2. Puts  the ini content into the settings array.
-     *	3. Tries to connect to the database.
-     *	4. If connection failed, exception is displayed and a log file gets created.
+     * This method makes connection to the database
+     * @throws PDOException
      */
-    private function Connect(): bool
+    static public function init(string $host, string $user, string $pass, string $dbname, int $port = 3306): self
     {
-        $dsn = "mysql:dbname={$this->settings['dbname']};host={$this->settings['host']};port={$this->settings['port']}";
-        try {
-            // Read settings from INI file, set UTF8
-            $this->pdo = new PDO($dsn, $this->settings['user'], $this->settings['password'], [
-                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
-            ]);
+        $pdo = new PDO("mysql:dbname={$dbname};host={$host};port={$port}", $user, $pass, [
+            PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, // Log any exceptions on Fatal error
+            // Disable emulation of prepared statements, use REAL prepared statements instead
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
 
-            // We can now log any exceptions on Fatal error.
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $class = __CLASS__;
+        $db = new $class($pdo);
 
-            // Disable emulation of prepared statements, use REAL prepared statements instead.
-            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-
-            // Connection succeeded, set the boolean to true.
-            $this->bConnected = true;
-
-        } catch (PDOException $e) {
-            trigger_error("[Mysql error] {$e->getMessage()}");
-        }
-
-        return $this->bConnected;
+        return $db;
     }
 
-    /*
-     *   You can use this little method if you want to close the PDO connection
-     *
-     */
+    // You can use this little method if you want to close the PDO connection
     public function CloseConnection(): void
     {
         // Set the PDO object to null to close the connection
@@ -95,12 +65,8 @@ class Db
      *	5. On exception : Write Exception into the log + SQL query.
      *	6. Reset the Parameters.
      */
-    private function Init(string $query, ?array $parameters = []): bool
+    private function initQuery(string $query, ?array $parameters = []): bool
     {
-        // Connect to database
-        if (!$this->bConnected) {
-            $this->Connect();
-        }
         try {
             // Prepare query
             $this->sQuery = $this->pdo->prepare($query);
@@ -138,7 +104,8 @@ class Db
                 $msg .= sprintf(', query: "%s"', $query);
             }
 
-            return !trigger_error($msg);
+            trigger_error($msg);
+            return false;
 
         } finally {
             // Reset the parameters
@@ -198,7 +165,7 @@ class Db
     {
         $query = trim(str_replace("\r", ' ', $query));
 
-        if (!$this->Init($query, $params)) {
+        if (!$this->initQuery($query, $params)) {
             return false;
         }
 
@@ -271,7 +238,7 @@ class Db
      */
     public function column(string $query, ?array $params = null): array
     {
-        $this->Init($query, $params);
+        $this->initQuery($query, $params);
         $Columns = $this->sQuery->fetchAll(PDO::FETCH_NUM);
 
         $column = null;
@@ -288,7 +255,7 @@ class Db
      */
     public function row(string $query, ?array $params = null, int $fetchmode = PDO::FETCH_ASSOC): array
     {
-        $this->Init($query, $params);
+        $this->initQuery($query, $params);
         $result = $this->sQuery->fetch($fetchmode);
         $this->sQuery->closeCursor(); // Frees up the connection to the server so that other SQL statements may be issued,
         return $result;
@@ -299,7 +266,7 @@ class Db
      */
     public function single(string $query, ?array $params = null): string
     {
-        $this->Init($query, $params);
+        $this->initQuery($query, $params);
         $result = $this->sQuery->fetchColumn();
         $this->sQuery->closeCursor(); // Frees up the connection to the server so that other SQL statements may be issued
         return $result;

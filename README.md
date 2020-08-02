@@ -17,7 +17,7 @@ Edit your [composer.json](https://getcomposer.org) (launch `composer update` aft
 }
 ```
 
-You can can use the PHP 5.6 version, [read more](https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class/tree/v1.2).
+You can can use the PHP 5.6 version, [read more](https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class/tree/v1.3).
 
 
 ### 2. Require the class in your project and create the instance
@@ -28,7 +28,10 @@ use Jgauthi\Component\Database\Db;
 require('vendor/autoload.php');
 
 // The instance
-$db = new db($dbhost, $dbuser, $dbpass, $dbname, $dbport = 3306);
+$db = db::init($dbhost, $dbuser, $dbpass, $dbname, $dbport = 3306);
+
+// Or by PDO Instance
+$db = new db($pdo);
 ```
 
 ### 3.  Display error
