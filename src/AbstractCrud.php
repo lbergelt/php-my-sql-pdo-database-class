@@ -5,24 +5,24 @@
  * @author       Vivek Wicky Aswal. (https://twitter.com/#!/VivekWickyAswal)
  * @contrib      jgauthi (https://github.com/jgauthi)
  *
- * @version      2.2
+ * @version      2.3
  */
 
-namespace Jgauthi\Component\Database;
+namespace LarsBergelt\Component\Database;
 
 use PDO;
 
 abstract class AbstractCrud
 {
-    protected DB $db;
-    public array $variables = [];
+    public const TABLE = 'table';
+    public const PK = 'id';
 
     // (Abstract) MUST BE Declare on CRUD child
-    public const TABLE = 'table';	// Your Table name
-    public const PK = 'id';		    // Primary Key of the Table
+    public ?array $variables = [];    // Your Table name
+    public array $list_fields_table = [];            // Primary Key of the Table
 
     // Check fields before init object (optional)
-    public array $list_fields_table = [];
+    protected DB $db;
     protected array $required_fields = [];
 
     public function __construct(Db &$db, array $data = [])
@@ -35,7 +35,7 @@ abstract class AbstractCrud
      * @param string $name
      * @param mixed $value
      */
-    public function __set(string $name, $value)
+    public function __set(string $name, mixed $value)
     {
         if ($name === static::PK) {
             $this->variables[static::PK] = $value;
@@ -59,7 +59,7 @@ abstract class AbstractCrud
 
     public function __isset(string $name): bool
     {
-        if (is_array($this->variables) && array_key_exists($name, $this->variables)) {
+        if (array_key_exists($name, $this->variables)) {
             return true;
         }
 
@@ -77,7 +77,7 @@ abstract class AbstractCrud
      * @param int|string|null $id
      * @return array|int|null
      */
-    public function save($id = null)
+    public function save(int|string $id = null): array|int|null
     {
         if (empty($this->variables[static::PK]) && !empty($id)) {
             $this->variables[static::PK] = $id;
@@ -91,7 +91,7 @@ abstract class AbstractCrud
                 continue;
             }
 
-            $fieldsvals .= "{$column} = :{$column},";
+            $fieldsvals .= "$column = :$column,";
         }
 
         $fieldsvals = substr_replace($fieldsvals, '', -1);
@@ -99,9 +99,9 @@ abstract class AbstractCrud
         if (count($columns) > 1) {
             if (empty($this->variables[static::PK])) {
                 unset($this->variables[static::PK]);
-                $sql = 'UPDATE `'.static::TABLE."` SET {$fieldsvals}";
+                $sql = 'UPDATE `' . static::TABLE . "` SET $fieldsvals";
             } else {
-                $sql = 'UPDATE `'.static::TABLE."` SET {$fieldsvals} WHERE ".static::PK.' = :'.static::PK.'';
+                $sql = 'UPDATE `' . static::TABLE . "` SET $fieldsvals WHERE " . static::PK . ' = :' . static::PK;
             }
 
             return $this->exec($sql);
@@ -113,16 +113,16 @@ abstract class AbstractCrud
     /**
      * @return array|int|null
      */
-    public function create()
+    public function create(): array|int|null
     {
         $bindings = $this->variables;
 
         if (!empty($bindings)) {
             $fields = array_keys($bindings);
-            $fieldsvals = [implode(',', $fields), ':'.implode(',:', $fields)];
-            $sql = 'INSERT INTO `'.static::TABLE."` ({$fieldsvals[0]}) VALUES ({$fieldsvals[1]})";
+            $fieldsvals = [implode(',', $fields), ':' . implode(',:', $fields)];
+            $sql = 'INSERT INTO `' . static::TABLE . "` ($fieldsvals[0]) VALUES ($fieldsvals[1])";
         } else {
-            $sql = 'INSERT INTO `'.static::TABLE.'` () VALUES ()';
+            $sql = 'INSERT INTO `' . static::TABLE . '` () VALUES ()';
         }
 
         return $this->exec($sql);
@@ -132,7 +132,7 @@ abstract class AbstractCrud
      * @param int|string|null $id
      * @return array|bool|int|null
      */
-    public function delete($id = null)
+    public function delete(int|string $id = null): array|bool|int|null
     {
         $id = ((!empty($id)) ? $id : $this->variables[static::PK]);
 
@@ -140,7 +140,7 @@ abstract class AbstractCrud
             return false;
         }
 
-        $sql = 'DELETE FROM `'.static::TABLE.'` WHERE '.static::PK.' = :'.static::PK.' LIMIT 1';
+        $sql = 'DELETE FROM `' . static::TABLE . '` WHERE ' . static::PK . ' = :' . static::PK . ' LIMIT 1';
 
         $result = $this->exec($sql, [static::PK => $id]);
         $this->variables = []; // Empty bindies
@@ -151,15 +151,15 @@ abstract class AbstractCrud
     /**
      * @param int|string|null $id
      */
-    public function find($id = null)
+    public function find(int|string $id = null): void
     {
         $id = ((!empty($id)) ? $id : $this->variables[static::PK]);
 
         if (!empty($id)) {
-            $sql = 'SELECT * FROM `'.static::TABLE.'` WHERE '.static::PK.' = :'.static::PK.' LIMIT 1';
+            $sql = 'SELECT * FROM `' . static::TABLE . '` WHERE ' . static::PK . ' = :' . static::PK . ' LIMIT 1';
 
             $result = $this->db->row($sql, [static::PK => $id]);
-            $this->variables = (false != $result) ? array_change_key_case($result, CASE_LOWER) : [];
+            $this->variables = $result ? array_change_key_case($result) : [];
         } else {
             $this->variables = null;
         }
@@ -177,28 +177,28 @@ abstract class AbstractCrud
     {
         $bindings = empty($fields) ? $this->variables : $fields;
 
-        $sql = 'SELECT * FROM '.static::TABLE;
+        $sql = 'SELECT * FROM ' . static::TABLE;
 
         if (!empty($bindings)) {
             $fieldsvals = [];
             $columns = array_keys($bindings);
             foreach ($columns as $column) {
-                $fieldsvals[] = $column.' = :'.$column;
+                $fieldsvals[] = $column . ' = :' . $column;
             }
-            $sql .= ' WHERE '.implode(' AND ', $fieldsvals);
+            $sql .= ' WHERE ' . implode(' AND ', $fieldsvals);
         }
 
         if (!empty($sort)) {
             $sortvals = [];
             foreach ($sort as $key => $value) {
-                $sortvals[] = $key.' '.$value;
+                $sortvals[] = $key . ' ' . $value;
             }
 
-            $sql .= ' ORDER BY '.implode(', ', $sortvals);
+            $sql .= ' ORDER BY ' . implode(', ', $sortvals);
         }
 
         if (!empty($limit)) {
-            $sql .= " LIMIT {$limit}";
+            $sql .= " LIMIT $limit";
         }
 
         return $this->exec($sql, $bindings);
@@ -207,82 +207,73 @@ abstract class AbstractCrud
     /**
      * @return array|int|null
      */
-    public function all(array $sort = [], bool $array_keys_primary_key = false)
+    public function all(array $sort = [], bool $array_keys_primary_key = false): array|int|null
     {
         $select = '*';
         $args = null;
         $fetchmode = PDO::FETCH_ASSOC;
 
         if ($array_keys_primary_key) {
-            $select = static::PK.' as pdo_id, '.static::TABLE.'.*';
+            $select = static::PK . ' as pdo_id, ' . static::TABLE . '.*';
             $fetchmode = PDO::FETCH_ASSOC | PDO::FETCH_GROUP | PDO::FETCH_UNIQUE;
         }
 
-        $sql = "SELECT {$select} FROM ".static::TABLE;
+        $sql = "SELECT $select FROM " . static::TABLE;
         if (!empty($sort)) {
             $sortvals = [];
             foreach ($sort as $key => $value) {
-                $sortvals[] = $key.' '.$value;
+                $sortvals[] = $key . ' ' . $value;
             }
 
-            $sql .= ' ORDER BY '.implode(', ', $sortvals);
+            $sql .= ' ORDER BY ' . implode(', ', $sortvals);
         }
 
         return $this->db->query($sql, $args, $fetchmode);
     }
 
-    public function min(string $field): string
+    public function min(string $field): ?string
     {
         if ($field) {
-            return $this->db->single("SELECT min({$field}) FROM ".static::TABLE);
+            return $this->db->single("SELECT min($field) FROM " . static::TABLE);
         }
+
+        return null;
     }
 
-    public function max(string $field): string
+    public function max(string $field): ?string
     {
         if ($field) {
-            return $this->db->single("SELECT max({$field}) FROM ".static::TABLE);
+            return $this->db->single("SELECT max($field) FROM " . static::TABLE);
         }
+
+        return null;
     }
 
-    public function avg(string $field): string
+    public function avg(string $field): ?string
     {
         if ($field) {
-            return $this->db->single("SELECT avg({$field}) FROM ".static::TABLE);
+            return $this->db->single("SELECT avg($field) FROM " . static::TABLE);
         }
+
+        return null;
     }
 
-    public function sum(string $field): string
+    public function sum(string $field): ?string
     {
         if ($field) {
-            return $this->db->single("SELECT sum({$field}) FROM ".static::TABLE);
+            return $this->db->single("SELECT sum($field) FROM " . static::TABLE);
         }
+
+        return null;
     }
 
-    public function count(string $field): string
+    public function count(string $field): ?string
     {
         if ($field) {
-            return $this->db->single("SELECT count({$field}) FROM ".static::TABLE);
-        }
-    }
-
-    /**
-     * @return array|int|null
-     */
-    private function exec(string $sql, ?array $params = null)
-    {
-        if (null !== $params) {
-            // Get result with the DB object
-            $result = $this->db->query($sql, $params);
-        } else {
-            // Get result with the DB object
-            $result = $this->db->query($sql, $this->variables);
+            return $this->db->single("SELECT count($field) FROM " . static::TABLE);
         }
 
-        // Empty bindings (why?)
-        // $this->variables = array();
-
-        return $result;
+        return null;
     }
 
     /**
@@ -302,7 +293,7 @@ abstract class AbstractCrud
         $diff_fields = array_diff(array_keys($this->variables), $this->list_fields_table);
 
         if (!empty($diff_fields)) {
-            return !user_error('Unsupported fields: '.implode(', ', $diff_fields));
+            return !user_error('Unsupported fields: ' . implode(', ', $diff_fields));
         }
 
         $this->variables = $common_fields;
@@ -318,7 +309,7 @@ abstract class AbstractCrud
             }
 
             if (!empty($field_missing)) {
-                return !user_error('Required fields not filleds: '.implode(', ', $field_missing));
+                return !user_error('Required fields not filleds: ' . implode(', ', $field_missing));
             }
         }
 
@@ -335,10 +326,31 @@ abstract class AbstractCrud
         }
 
         $id = $this->variables[static::PK];
-        $sql = 'SELECT '.static::PK.' FROM `'.static::TABLE.'` WHERE '.static::PK.'= :'.static::PK.' LIMIT 1';
+        $sql = 'SELECT ' . static::PK . ' FROM `' . static::TABLE . '` WHERE ' . static::PK . '= :' . static::PK . ' LIMIT 1';
 
         $already_exist = $this->db->row($sql, [static::PK => $id]);
 
         return !empty($already_exist);
+    }
+
+    /**
+     * @param string $sql
+     * @param array|null $params
+     * @return array|int|null
+     */
+    private function exec(string $sql, ?array $params = null): array|int|null
+    {
+        if (null !== $params) {
+            // Get result with the DB object
+            $result = $this->db->query($sql, $params);
+        } else {
+            // Get result with the DB object
+            $result = $this->db->query($sql, $this->variables);
+        }
+
+        // Empty bindings (why?)
+        // $this->variables = array();
+
+        return $result;
     }
 }

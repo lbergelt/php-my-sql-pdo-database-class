@@ -1,5 +1,5 @@
 <?php
-use Jgauthi\Component\Database\AbstractCrud;
+use LarsBergelt\Component\Database\AbstractCrud;
 
 class Person extends AbstractCrud
 {
@@ -9,13 +9,13 @@ class Person extends AbstractCrud
     // Primary Key of the Table
     protected string $pk = 'id';
 
-    public function create()
+    public function create(): int|array|null
     {
         $this->variables['last_update'] = null;
         return parent::create();
     }
 
-    public function save($id = null)
+    public function save(int|string $id = null): int|array|null
     {
         // Save Date Update
         $this->variables['last_update'] = new DateTime;

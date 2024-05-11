@@ -1,19 +1,21 @@
 {
-  "name": "jgauthi/indieteq-php-my-sql-pdo-database-class",
+  "name": "lbergelt/php-my-sql-pdo-database-class",
   "description": "A database class for MySQL with PDO",
   "type": "library",
   "keywords": [ "mysql", "pdo", "php", "beer", "free" ],
-  "homepage": "https://github.com/jgauthi/indieteq-php-my-sql-pdo-database-class",
+  "homepage": "https://github.com/lbergelt/indieteq-php-my-sql-pdo-database-class",
   "license": "Beerware",
   "authors": [
+    { "name": "lbergelt", "email": "lb@lbergelt.de" },
+    { "name": "lbergelt", "homepage": "https://lbergelt.de" },
     { "name": "wicky", "email": "info@wickyaswal.com" },
     { "name": "jgauthi", "homepage": "https://github.com/jgauthi" }
   ],
   "require": {
-    "php": ">=7.4.0",
+    "php": ">=8.1.0",
     "ext-pdo": "*"
   },
   "autoload": {
-    "psr-4": { "Jgauthi\\Component\\Database\\": "src/" }
+    "psr-4": { "LarsBergelt\\Component\\Database\\": "src/" }
   }
 }
